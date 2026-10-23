@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_stn_requisito_form" model="ir.ui.view">
+        <field name="name">stn.requisito.form</field>
+        <field name="model">stn.requisito</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_stn_actualizar_semaforo" type="object" string="Actualizar semáforo"/>
+                    <field name="stage_id" widget="statusbar" options="{'clickable': '1'}"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_lineas" type="object" class="oe_stat_button" icon="fa-gavel">
+                            <field name="linea_count" widget="statinfo" string="Licitaciones"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Vencido" bg_color="text-bg-danger" invisible="stage_code != 'vencido'"/>
+                    <widget name="web_ribbon" title="Próximo a vencer" bg_color="text-bg-warning" invisible="stage_code != 'proximo'"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="Ej. Análisis microbiológico EMA"/></h1>
+                    </div>
+                    <group>
+                        <group string="Vigencia">
+                            <field name="fecha_emision"/>
+                            <field name="vigencia_meses"/>
+                            <field name="fecha_vencimiento"/>
+                            <field name="dias_tramite"/>
+                            <field name="fecha_recomendada_renovacion"/>
+                            <field name="dias_restantes"/>
+                            <field name="stage_code" invisible="1"/>
+                        </group>
+                        <group string="Responsables">
+                            <field name="user_id" widget="many2one_avatar_user"/>
+                            <field name="proveedor_id"/>
+                            <field name="categoria_id"/>
+                            <field name="tipo_servicio_ids" widget="many2many_tags"/>
+                            <field name="priority" widget="boolean_favorite"/>
+                            <field name="kanban_state" widget="state_selection"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Documento" name="documento">
+                            <field name="attachment_ids" widget="many2many_binary"/>
+                        </page>
+                        <page string="Notas" name="notas">
+                            <field name="notes"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_stn_requisito_list" model="ir.ui.view">
+        <field name="name">stn.requisito.list</field>
+        <field name="model">stn.requisito</field>
+        <field name="arch" type="xml">
+            <list decoration-danger="stage_code == 'vencido'" decoration-warning="stage_code == 'proximo'"
+                  decoration-success="stage_code == 'vigente'">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="categoria_id" optional="show"/>
+                <field name="user_id" widget="many2one_avatar_user" optional="show"/>
+                <field name="proveedor_id" optional="hide"/>
+                <field name="fecha_emision" optional="show"/>
+                <field name="vigencia_meses" optional="hide"/>
+                <field name="fecha_recomendada_renovacion" optional="show"/>
+                <field name="fecha_vencimiento" optional="show"/>
+                <field name="dias_restantes" optional="show"/>
+                <field name="stage_id" widget="badge"/>
+                <field name="stage_code" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_stn_requisito_kanban" model="ir.ui.view">
+        <field name="name">stn.requisito.kanban</field>
+        <field name="model">stn.requisito</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="stage_id" default_order="priority desc, sequence asc, id desc" highlight_color="color">
+                <field name="color"/>
+                <progressbar field="kanban_state" colors='{"normal": "200", "done": "success", "blocked": "danger"}'/>
+                <templates>
+                    <t t-name="menu">
+                        <a t-if="widget.editable" role="menuitem" type="open" class="dropdown-item">Editar</a>
+                        <a t-if="widget.deletable" role="menuitem" type="delete" class="dropdown-item">Eliminar</a>
+                        <field widget="kanban_color_picker" name="color"/>
+                    </t>
+                    <t t-name="card">
+                        <div class="d-flex">
+                            <field name="priority" widget="boolean_favorite" nolabel="1"/>
+                            <field name="name" class="fw-bold"/>
+                        </div>
+                        <field name="categoria_id" class="text-muted"/>
+                        <div>Vence: <field name="fecha_vencimiento"/> · <field name="dias_restantes"/> días</div>
+                        <footer>
+                            <div class="ms-auto d-flex align-items-center">
+                                <field name="kanban_state" widget="state_selection"/>
+                                <field class="ms-1" name="user_id" widget="many2one_avatar_user"/>
+                            </div>
+                        </footer>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="view_stn_requisito_calendar" model="ir.ui.view">
+        <field name="name">stn.requisito.calendar</field>
+        <field name="model">stn.requisito</field>
+        <field name="arch" type="xml">
+            <calendar date_start="fecha_recomendada_renovacion" mode="month" color="categoria_id">
+                <field name="name"/>
+                <field name="fecha_vencimiento"/>
+                <field name="user_id"/>
+            </calendar>
+        </field>
+    </record>
+
+    <record id="view_stn_requisito_search" model="ir.ui.view">
+        <field name="name">stn.requisito.search</field>
+        <field name="model">stn.requisito</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="categoria_id"/>
+                <field name="user_id"/>
+                <filter name="proximos" string="Próximos a vencer" domain="[('stage_code', '=', 'proximo')]"/>
+                <filter name="vencidos" string="Vencidos" domain="[('stage_code', '=', 'vencido')]"/>
+                <filter name="mios" string="Mis requisitos" domain="[('user_id', '=', uid)]"/>
+                <separator/>
+                <filter name="archivados" string="Archivados" domain="[('active', '=', False)]"/>
+                <filter name="g_etapa" string="Etapa" context="{'group_by': 'stage_id'}"/>
+                <filter name="g_categoria" string="Categoría" context="{'group_by': 'categoria_id'}"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_stn_requisito" model="ir.actions.act_window">
+        <field name="name">Requisitos (vigencias)</field>
+        <field name="res_model">stn.requisito</field>
+        <field name="view_mode">kanban,list,form,calendar</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Registra los documentos de la empresa</p>
+            <p>Emisión, vigencia y tiempo de trámite: el semáforo avisa cuándo iniciar la renovación.</p>
+        </field>
+    </record>
+
+    <!-- Requisitos por licitación (Studio: x_crm_lead_line_265ca) -->
+    <record id="view_stn_licitacion_requisito_list" model="ir.ui.view">
+        <field name="name">stn.licitacion.requisito.list</field>
+        <field name="model">stn.licitacion.requisito</field>
+        <field name="arch" type="xml">
+            <list decoration-danger="desecha and situacion == 'conseguir'">
+                <field name="lead_id"/>
+                <field name="partner_id" optional="show"/>
+                <field name="state_id" optional="show"/>
+                <field name="tipo_servicio_id" optional="show"/>
+                <field name="categoria_id" optional="show"/>
+                <field name="referencia" optional="show"/>
+                <field name="name"/>
+                <field name="tipo" optional="show"/>
+                <field name="situacion" optional="show"/>
+                <field name="efecto" optional="show"/>
+                <field name="desecha" column_invisible="1"/>
+                <field name="requisito_id" optional="show"/>
+                <field name="etapa_id" optional="show"/>
+                <field name="fecha_referencia" optional="show"/>
+                <field name="semaforo" widget="badge" decoration-success="semaforo == 'verde'"
+                       decoration-warning="semaforo in ('amarillo', 'naranja')" decoration-danger="semaforo == 'rojo'"/>
+                <field name="fecha_vencimiento" optional="show"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_stn_licitacion_requisito_form" model="ir.ui.view">
+        <field name="name">stn.licitacion.requisito.form</field>
+        <field name="model">stn.licitacion.requisito</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="lead_id"/>
+                            <field name="name"/>
+                            <field name="referencia"/>
+                            <field name="tipo"/>
+                            <field name="tipo_detalle"/>
+                            <field name="situacion"/>
+                            <field name="situacion_detalle"/>
+                            <field name="nota"/>
+                            <field name="efecto"/>
+                            <field name="vigencia_maxima"/>
+                            <field name="antiguedad_max_dias"/>
+                            <field name="fecha_referencia"/>
+                            <field name="semaforo" widget="badge"/>
+                            <field name="semaforo_detalle"/>
+                        </group>
+                        <group>
+                            <field name="tipo_servicio_id"/>
+                            <field name="categoria_id"/>
+                            <field name="requisito_id"/>
+                            <field name="etapa_id"/>
+                            <field name="responsable_id"/>
+                            <field name="proveedor_id"/>
+                            <field name="fecha_emision"/>
+                            <field name="fecha_recomendada_renovacion"/>
+                            <field name="fecha_vencimiento"/>
+                            <field name="origen"/>
+                        </group>
+                    </group>
+                    <separator string="Extracto literal de la convocatoria"/>
+                    <field name="extracto_literal"/>
+                    <field name="captura" widget="image"/>
+                    <field name="notas"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="view_stn_licitacion_requisito_search" model="ir.ui.view">
+        <field name="name">stn.licitacion.requisito.search</field>
+        <field name="model">stn.licitacion.requisito</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="lead_id"/>
+                <field name="requisito_id"/>
+                <filter name="conseguir" string="Por conseguir" domain="[('situacion', '=', 'conseguir')]"/>
+                <filter name="desechan" string="Desechan si faltan" domain="[('desecha', '=', True)]"/>
+                <filter name="rojos" string="Rojo / naranja" domain="[('semaforo', 'in', ['rojo', 'naranja'])]"/>
+                <filter name="g_semaforo" string="Semáforo" context="{'group_by': 'semaforo'}"/>
+                <filter name="g_tipo" string="Tipo" context="{'group_by': 'tipo'}"/>
+                <filter name="g_situacion" string="Situación" context="{'group_by': 'situacion'}"/>
+                <filter name="g_categoria" string="Categoría" context="{'group_by': 'categoria_id'}"/>
+            </search>
+        </field>
+    </record>
+    <record id="action_stn_licitacion_requisito" model="ir.actions.act_window">
+        <field name="name">Requisitos por licitación</field>
+        <field name="res_model">stn.licitacion.requisito</field>
+        <field name="view_mode">list,form,pivot</field>
+    </record>
+</odoo>

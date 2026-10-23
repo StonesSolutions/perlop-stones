@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_groups_privilege_licitaciones" model="res.groups.privilege">
+        <field name="name">Licitaciones</field>
+        <field name="category_id" ref="base.module_category_sales"/>
+        <field name="sequence">30</field>
+    </record>
+
+    <record id="group_licitaciones_user" model="res.groups">
+        <field name="name">Usuario</field>
+        <field name="sequence">10</field>
+        <field name="privilege_id" ref="res_groups_privilege_licitaciones"/>
+        <field name="implied_ids" eval="[(4, ref('sales_team.group_sale_salesman_all_leads'))]"/>
+        <field name="comment">Captura y da seguimiento a licitaciones; mueve etapas solo con los botones de flujo.</field>
+    </record>
+
+    <record id="group_licitaciones_director" model="res.groups">
+        <field name="name">Directores</field>
+        <field name="sequence">20</field>
+        <field name="privilege_id" ref="res_groups_privilege_licitaciones"/>
+        <field name="implied_ids" eval="[(4, ref('group_licitaciones_user'))]"/>
+        <field name="comment">Únicos autorizados para mover libremente la etapa y marcar como ganada una licitación.</field>
+    </record>
+
+    <record id="base.user_admin" model="res.users">
+        <field name="group_ids" eval="[(4, ref('group_licitaciones_director'))]"/>
+    </record>
+</odoo>

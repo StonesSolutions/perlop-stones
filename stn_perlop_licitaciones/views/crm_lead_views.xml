@@ -1,0 +1,587 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ================================================================
+         FORMULARIO
+         ================================================================ -->
+    <record id="crm_lead_view_form_stn_licitaciones" model="ir.ui.view">
+        <field name="name">crm.lead.form.stn.licitaciones</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_lead_view_form"/>
+        <field name="arch" type="xml">
+            <!-- Regla de Directores -->
+            <xpath expr="//header/field[@name='stage_id']" position="before">
+                <field name="stn_can_move_stage" invisible="1"/>
+                <field name="stn_es_licitacion" invisible="1"/>
+                <field name="stn_stage_codigo" invisible="1"/>
+                <button name="action_stn_pasar_analisis" type="object" string="Pasar a análisis" class="btn-primary"
+                        invisible="not stn_es_licitacion or stn_stage_codigo != 'nueva'"/>
+                <button name="action_stn_pasar_preparacion" type="object" string="Aprobar y preparar" class="btn-primary"
+                        invisible="not stn_es_licitacion or stn_stage_codigo != 'analisis'"/>
+                <button name="action_stn_pasar_revision_ia" type="object" string="Pasar a revisión IA" class="btn-primary"
+                        invisible="not stn_es_licitacion or stn_stage_codigo != 'preparacion'"/>
+                <button name="action_stn_pasar_revision" type="object" string="Pasar a revisión" class="btn-primary"
+                        invisible="not stn_es_licitacion or stn_stage_codigo != 'revision_ia'"/>
+                <button name="action_stn_pasar_alta" type="object" string="Marcar presentada" class="btn-primary"
+                        invisible="not stn_es_licitacion or stn_stage_codigo != 'revision'"/>
+                <button name="action_stn_pasar_evaluacion" type="object" string="Pasar a evaluación" class="btn-primary"
+                        invisible="not stn_es_licitacion or stn_stage_codigo != 'presentada'"/>
+            </xpath>
+            <xpath expr="//header/field[@name='stage_id']" position="attributes">
+                <attribute name="readonly">won_status == 'lost' or not active or (stn_es_licitacion and not stn_can_move_stage)</attribute>
+            </xpath>
+
+            <!-- Encabezado: datos clave junto al cliente -->
+            <xpath expr="//group[@name='opportunity_partner']" position="inside">
+                <field name="stn_cliente_nuevo" invisible="not stn_es_licitacion"/>
+                <field name="stn_convocante_id" invisible="not stn_es_licitacion"/>
+            </xpath>
+            <xpath expr="//field[@name='date_deadline']/.." position="after">
+                <field name="stn_viabilidad" widget="priority" invisible="not stn_es_licitacion"/>
+                <field name="stn_estatus_id" invisible="not stn_es_licitacion" options="{'no_create_edit': True}"/>
+                <field name="stn_resultado" invisible="not stn_es_licitacion"/>
+            </xpath>
+
+            <!-- Pestañas de licitación -->
+            <xpath expr="//notebook/page[@name='internal_notes']" position="before">
+                <page string="Licitación" name="stn_licitacion" invisible="not stn_es_licitacion">
+                    <div class="alert alert-warning mb-2" role="alert" invisible="not stn_proximo_evento">
+                        <i class="fa fa-clock-o me-1" title="Cuenta regresiva"/><strong>Cuenta regresiva: </strong><field name="stn_proximo_evento" class="d-inline"/>
+                    </div>
+                    <div class="alert alert-info mb-2" role="alert" invisible="not stn_lectura">
+                        <strong>Lectura de LICIA: </strong><field name="stn_lectura" readonly="1" class="d-inline"/>
+                    </div>
+                    <group>
+                        <group string="Datos generales">
+                            <field name="stn_no_procedimiento"/>
+                            <field name="stn_plataforma"/>
+                            <field name="stn_folio_plataforma"/>
+                            <field name="stn_url_ficha" widget="url"/>
+                            <field name="stn_tipo_procedimiento_id"/>
+                            <field name="stn_tipo_procedimiento_detalle" string="Fundamento"/>
+                            <field name="stn_modalidad"/>
+                            <field name="stn_caracter"/>
+                            <field name="stn_criterio_id"/>
+                            <field name="stn_criterio_detalle" string="Detalle del criterio"/>
+                            <field name="stn_minimo_tecnico"/>
+                            <field name="stn_tipo_servicio_id"/>
+                            <field name="stn_cucop"/>
+                            <field name="stn_objeto"/>
+                        </group>
+                        <group string="Convocante">
+                            <field name="stn_empresa_licitante_id"/>
+                            <field name="stn_dependencia_id"/>
+                            <field name="stn_convocante_id"/>
+                            <field name="partner_id" string="Unidad compradora"/>
+                            <field name="stn_unidad_compradora_clave"/>
+                            <field name="stn_area_requirente"/>
+                            <field name="state_id" string="Estado"/>
+                            <field name="stn_plaza"/>
+                            <field name="stn_operamos_estado"/>
+                        </group>
+                        <group string="Montos y contrato">
+                            <field name="company_currency" invisible="1"/>
+                            <field name="stn_monto_minimo"/>
+                            <field name="stn_monto_maximo"/>
+                            <label for="stn_vigencia_inicio" string="Vigencia del contrato"/>
+                            <div class="o_row">
+                                <field name="stn_vigencia_inicio" widget="daterange" options="{'end_date_field': 'stn_vigencia_fin'}"/>
+                                <field name="stn_vigencia_fin" invisible="1"/>
+                            </div>
+                            <field name="stn_monto_minimo_estimado" invisible="stn_monto_minimo"/>
+                            <field name="stn_monto_maximo_estimado" invisible="stn_monto_maximo"/>
+                            <field name="stn_garantia_pct"/>
+                            <field name="stn_conjunta_permitida"/>
+                            <field name="stn_modo_participacion"/>
+                            <field name="stn_requiere_rc"/>
+                            <field name="stn_nota_montos"/>
+                        </group>
+                        <group string="Evaluación de LICIA">
+                            <field name="stn_viabilidad" widget="priority"/>
+                            <field name="stn_accion"/>
+                            <field name="stn_accion_detalle"/>
+                            <field name="stn_razon_nivel"/>
+                            <field name="stn_requisitos_faltantes"/>
+                            <field name="stn_requisitos_desechan"/>
+                            <field name="stn_puntos_maximos"/>
+                        </group>
+                        <group string="Documentación">
+                            <field name="stn_requisitos_file" filename="stn_requisitos_filename"/>
+                            <field name="stn_requisitos_filename" invisible="1"/>
+                            <field name="stn_carpeta"/>
+                        </group>
+                    </group>
+                </page>
+
+                <page string="Fechas y eventos" name="stn_fechas" invisible="not stn_es_licitacion">
+                    <group>
+                        <group string="Procedimiento">
+                            <field name="stn_fecha_deteccion"/>
+                            <field name="stn_fecha_publicacion"/>
+                            <field name="stn_fecha_limite_preguntas"/>
+                            <field name="stn_fecha_junta"/>
+                            <field name="stn_fecha_apertura"/>
+                            <field name="stn_fecha_limite_interna" decoration-danger="1"/>
+                            <field name="stn_fecha_fallo"/>
+                            <field name="stn_fecha_inicio_contrato"/>
+                        </group>
+                        <group string="Seguimiento interno">
+                            <field name="stn_fecha_analisis"/>
+                            <field name="stn_fecha_aprobacion"/>
+                            <field name="stn_fecha_propuesta_terminada"/>
+                            <field name="stn_fecha_revision"/>
+                            <field name="stn_fecha_presentacion"/>
+                            <field name="stn_fecha_evaluacion"/>
+                            <field name="stn_fechas_verificadas"/>
+                            <field name="stn_dias_reaccion"/>
+                            <field name="stn_dias_disponibles"/>
+                            <field name="stn_dias_preparacion"/>
+                        </group>
+                    </group>
+                    <div class="d-flex justify-content-end">
+                        <button name="action_stn_sincronizar_agenda" type="object" class="btn-secondary"
+                                string="Sincronizar calendario y recordatorios" icon="fa-calendar"/>
+                    </div>
+                    <field name="stn_evento_ids">
+                        <list editable="bottom" decoration-muted="not aplica or hecho" decoration-danger="escalado and not hecho">
+                            <field name="tipo"/>
+                            <field name="name" optional="hide"/>
+                            <field name="aplica" widget="boolean_toggle"/>
+                            <field name="fecha_oficial"/>
+                            <field name="anticipacion_horas" optional="show"/>
+                            <field name="fecha_limite_interna"/>
+                            <field name="dias_restantes" optional="show"/>
+                            <field name="cae_fin_semana" optional="show"/>
+                            <field name="hecho" optional="show"/>
+                            <field name="aviso_enviado" optional="hide"/>
+                            <field name="escalado" optional="hide"/>
+                            <field name="fuente" optional="show"/>
+                            <field name="nota" optional="show"/>
+                            <field name="calendar_event_id" optional="hide"/>
+                            <field name="origen" optional="hide"/>
+                        </list>
+                    </field>
+                </page>
+
+                <page string="Partidas" name="stn_partidas" invisible="not stn_es_licitacion">
+                    <group>
+                        <group>
+                            <field name="stn_partidas_count"/>
+                            <field name="stn_partidas_ganadas"/>
+                            <field name="stn_monto_adjudicado"/>
+                        </group>
+                        <group>
+                            <field name="stn_logistica_nota"/>
+                            <field name="stn_condiciones_entrega"/>
+                        </group>
+                    </group>
+                    <field name="stn_partida_ids">
+                        <list editable="bottom" decoration-success="ganada == 'si'" decoration-muted="participamos == 'no'">
+                            <field name="company_currency" column_invisible="1"/>
+                            <field name="numero" widget="handle"/>
+                            <field name="clave"/>
+                            <field name="unidad" optional="show"/>
+                            <field name="municipio" optional="hide"/>
+                            <field name="corredor" optional="show"/>
+                            <field name="domicilio" optional="hide"/>
+                            <field name="domicilio_alterno" optional="hide"/>
+                            <field name="domicilio_inconsistente" optional="show"/>
+                            <field name="vehiculos" optional="hide"/>
+                            <field name="cedis" optional="hide"/>
+                            <field name="minimo" sum="Total"/>
+                            <field name="maximo" sum="Total"/>
+                            <field name="maximo_estimado" optional="show"/>
+                            <field name="maximo_anterior" sum="Total" optional="show"/>
+                            <field name="ganador_anterior_id" optional="show"/>
+                            <field name="suma_precios_ganador" optional="show"/>
+                            <field name="nuestra_suma_precios" optional="show"/>
+                            <field name="diferencia_pct" optional="show"/>
+                            <field name="lugar_precios" optional="hide"/>
+                            <field name="participamos"/>
+                            <field name="ganada"/>
+                            <field name="monto_ofertado" optional="hide"/>
+                            <field name="monto_adjudicado" optional="show"/>
+                            <field name="partner_entrega_id" optional="hide"/>
+                            <field name="renglon_count" optional="show"/>
+                            <button name="action_ver_renglones" type="object" icon="fa-list" title="Renglones"/>
+                        </list>
+                    </field>
+                    <separator string="Sedes y logística"/>
+                    <field name="stn_sede_ids">
+                        <list editable="bottom" decoration-warning="domicilio_inconsistente">
+                            <field name="unidad"/>
+                            <field name="partidas"/>
+                            <field name="municipio" optional="show"/>
+                            <field name="domicilio" optional="show"/>
+                            <field name="domicilio_alterno" optional="hide"/>
+                            <field name="domicilio_inconsistente" optional="show"/>
+                            <field name="corredor" optional="show"/>
+                            <field name="vehiculos" optional="show"/>
+                            <field name="cedis" optional="show"/>
+                            <field name="horario" optional="hide"/>
+                            <field name="partner_entrega_id" optional="hide"/>
+                            <field name="nota" optional="hide"/>
+                        </list>
+                    </field>
+                </page>
+
+                <page string="Requerimientos" name="stn_requerimientos" invisible="not stn_es_licitacion">
+                    <field name="stn_requisito_ids">
+                        <list editable="bottom" default_order="sequence asc, id desc"
+                              decoration-danger="desecha and situacion == 'conseguir'"
+                              decoration-success="situacion == 'tenemos'">
+                            <field name="sequence" widget="handle"/>
+                            <field name="referencia" optional="show"/>
+                            <field name="name"/>
+                            <field name="tipo" optional="show"/>
+                            <field name="situacion" optional="show"/>
+                            <field name="situacion_detalle" optional="hide"/>
+                            <field name="nota" optional="show"/>
+                            <field name="efecto" optional="show"/>
+                            <field name="desecha" column_invisible="1"/>
+                            <field name="vigencia_maxima" optional="show"/>
+                            <field name="antiguedad_max_dias" optional="show"/>
+                            <field name="fecha_referencia" optional="show"/>
+                            <field name="semaforo" widget="badge" optional="show"
+                                   decoration-success="semaforo == 'verde'" decoration-warning="semaforo in ('amarillo', 'naranja')"
+                                   decoration-danger="semaforo == 'rojo'"/>
+                            <field name="semaforo_detalle" optional="hide"/>
+                            <field name="extracto_literal" optional="hide"/>
+                            <field name="partner_id" optional="hide"/>
+                            <field name="state_id" optional="hide"/>
+                            <field name="tipo_servicio_id" optional="hide"/>
+                            <field name="categoria_id" optional="show"/>
+                            <field name="requisito_id" optional="show"/>
+                            <field name="responsable_id" optional="hide"/>
+                            <field name="proveedor_id" optional="hide"/>
+                            <field name="etapa_id" optional="show"/>
+                            <field name="notas" optional="hide"/>
+                            <field name="fecha_emision" optional="hide"/>
+                            <field name="fecha_recomendada_renovacion" optional="hide"/>
+                            <field name="fecha_vencimiento" optional="show"/>
+                        </list>
+                    </field>
+                </page>
+
+                <page string="Puntos y aclaraciones" name="stn_puntos" invisible="not stn_es_licitacion">
+                    <group>
+                        <group string="Evaluación por puntos">
+                            <field name="stn_minimo_tecnico"/>
+                            <field name="stn_puntos_maximos"/>
+                        </group>
+                        <group string="Junta de aclaraciones">
+                            <field name="stn_junta_aplica"/>
+                            <field name="stn_aclaraciones"/>
+                            <field name="stn_acta_aclaraciones"/>
+                        </group>
+                    </group>
+                    <field name="stn_punto_ids">
+                        <list editable="bottom">
+                            <field name="sequence" widget="handle"/>
+                            <field name="rubro"/>
+                            <field name="puntos" sum="Total"/>
+                            <field name="puntos_esperados" sum="Esperados" optional="show"/>
+                            <field name="entregable"/>
+                            <field name="situacion"/>
+                            <field name="situacion_detalle" optional="hide"/>
+                        </list>
+                    </field>
+                    <separator string="Preguntas de aclaración"/>
+                    <field name="stn_pregunta_ids">
+                        <list editable="bottom">
+                            <field name="numero"/>
+                            <field name="pregunta"/>
+                            <field name="numeral" optional="show"/>
+                            <field name="estado"/>
+                            <field name="estado_detalle" optional="hide"/>
+                            <field name="respuesta" optional="show"/>
+                        </list>
+                    </field>
+                </page>
+
+                <page string="Antecedentes" name="stn_antecedentes" invisible="not stn_es_licitacion">
+                    <field name="stn_antecedente_ids">
+                        <list>
+                            <field name="company_currency" column_invisible="1"/>
+                            <field name="procedimiento"/>
+                            <field name="participamos"/>
+                            <field name="ganador_id"/>
+                            <field name="puntos_ganador" optional="show"/>
+                            <field name="contrato" optional="show"/>
+                            <field name="precio_a_vencer" optional="show"/>
+                            <field name="monto_maximo"/>
+                            <field name="vigencia" optional="show"/>
+                            <field name="lead_anterior_id" optional="hide"/>
+                        </list>
+                        <form>
+                            <group>
+                                <group>
+                                    <field name="company_currency" invisible="1"/>
+                                    <field name="procedimiento"/>
+                                    <field name="lead_anterior_id"/>
+                                    <field name="participamos"/>
+                                    <field name="criterio"/>
+                                    <field name="ganador_id"/>
+                                    <field name="puntos_ganador"/>
+                                    <field name="contrato"/>
+                                </group>
+                                <group>
+                                    <field name="monto_maximo"/>
+                                    <field name="vigencia"/>
+                                    <field name="precio_a_vencer"/>
+                                    <field name="desiertas"/>
+                                </group>
+                            </group>
+                            <group>
+                                <field name="participantes"/>
+                                <field name="razon_mismo"/>
+                                <field name="como_gano"/>
+                                <field name="hipotesis"/>
+                            </group>
+                        </form>
+                    </field>
+                    <separator string="Competidores"/>
+                    <field name="stn_competidor_ids">
+                        <list editable="bottom">
+                            <field name="partner_id" context="{'default_stn_es_competidor': True, 'default_is_company': True}"/>
+                            <field name="rol"/>
+                            <field name="historia"/>
+                            <field name="lectura"/>
+                        </list>
+                    </field>
+                </page>
+
+                <page string="Resultado" name="stn_resultado" invisible="not stn_es_licitacion">
+                    <group>
+                        <group string="Acta">
+                            <field name="stn_acta_fallo" filename="stn_acta_fallo_filename"/>
+                            <field name="stn_acta_fallo_filename" invisible="1"/>
+                            <field name="stn_propuesta_economica" filename="stn_propuesta_economica_filename"/>
+                            <field name="stn_propuesta_economica_filename" invisible="1"/>
+                            <field name="stn_resultado"/>
+                            <field name="stn_apertura_celebrada"/>
+                            <field name="stn_lugar_precios"/>
+                            <field name="stn_fallo_texto"/>
+                            <field name="lost_reason_id" string="Motivo de pérdida"/>
+                        </group>
+                        <group>
+                            <field name="stn_causa_literal" nolabel="1" colspan="2" placeholder="Causa literal del acta (no comentarios del grupo)"/>
+                        </group>
+                    </group>
+                    <separator string="Si ganamos: pendientes después del fallo"/>
+                    <field name="stn_pendiente_ids">
+                        <list editable="bottom" decoration-muted="estado == 'espera'" decoration-success="estado == 'hecho'">
+                            <field name="name"/>
+                            <field name="plazo"/>
+                            <field name="fecha"/>
+                            <field name="fecha_detalle" optional="hide"/>
+                            <field name="fuente" optional="show"/>
+                            <field name="estado"/>
+                        </list>
+                    </field>
+                </page>
+
+                <page string="Historial LICIA" name="stn_historial" invisible="not stn_es_licitacion">
+                    <group>
+                        <group>
+                            <field name="stn_licia_version"/>
+                            <field name="stn_licia_corte"/>
+                            <field name="stn_licia_ultima_sync"/>
+                        </group>
+                    </group>
+                    <separator string="Cambios de fecha y estatus"/>
+                    <field name="stn_cambio_ids">
+                        <list editable="bottom">
+                            <field name="fecha"/>
+                            <field name="campo"/>
+                            <field name="antes"/>
+                            <field name="despues"/>
+                            <field name="fuente"/>
+                        </list>
+                    </field>
+                    <separator string="Seguimiento diario"/>
+                    <field name="stn_seguimiento_ids" readonly="1">
+                        <list>
+                            <field name="fecha"/>
+                            <field name="texto"/>
+                        </list>
+                    </field>
+                    <separator string="Bitácora de integración" groups="base.group_system"/>
+                    <field name="stn_log_ids" readonly="1" groups="base.group_system">
+                        <list>
+                            <field name="fecha"/>
+                            <field name="origen"/>
+                            <field name="estado"/>
+                            <field name="accion"/>
+                            <field name="mensaje"/>
+                        </list>
+                    </field>
+                    <field name="stn_licia_payload" groups="base.group_no_one" widget="ace" options="{'mode': 'json'}"/>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- ================================================================
+         KANBAN (Studio: estatus y fecha límite de aclaraciones en tarjeta)
+         ================================================================ -->
+    <record id="crm_case_kanban_view_leads_stn" model="ir.ui.view">
+        <field name="name">crm.lead.kanban.stn.licitaciones</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_case_kanban_view_leads"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='tag_ids']" position="after">
+                <field name="stn_es_licitacion" invisible="1"/>
+                <div invisible="not stn_es_licitacion" class="small">
+                    <field name="stn_no_procedimiento" class="text-muted d-block"/>
+                    <field name="stn_estatus_id" widget="badge" invisible="not stn_estatus_id"/>
+                    <span invisible="not stn_fecha_limite_interna"> Límite: <field name="stn_fecha_limite_interna" widget="remaining_days"/></span>
+                    <field name="stn_proximo_evento" class="d-block text-warning"/>
+                </div>
+                <field name="stn_viabilidad" widget="priority" readonly="1" invisible="not stn_es_licitacion"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- ================================================================
+         LISTA
+         ================================================================ -->
+    <record id="crm_lead_view_list_stn_licitaciones" model="ir.ui.view">
+        <field name="name">crm.lead.list.stn.licitaciones</field>
+        <field name="model">crm.lead</field>
+        <field name="priority">40</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="stn_no_procedimiento"/>
+                <field name="name"/>
+                <field name="stn_empresa_licitante_id" optional="hide"/>
+                <field name="stn_convocante_id" optional="show"/>
+                <field name="partner_id" string="Unidad compradora" optional="hide"/>
+                <field name="state_id" optional="show"/>
+                <field name="stn_tipo_servicio_id" optional="show"/>
+                <field name="stn_viabilidad" widget="priority" optional="show"/>
+                <field name="stn_accion" optional="show"/>
+                <field name="stn_estatus_id" widget="badge" optional="show"/>
+                <field name="stage_id" optional="show"/>
+                <field name="stn_fecha_limite_interna" widget="remaining_days" optional="show"/>
+                <field name="stn_fecha_apertura" optional="show"/>
+                <field name="stn_fecha_fallo" optional="hide"/>
+                <field name="company_currency" column_invisible="1"/>
+                <field name="stn_monto_maximo" sum="Total" optional="show"/>
+                <field name="stn_monto_adjudicado" sum="Total" optional="hide"/>
+                <field name="stn_resultado" optional="show"/>
+                <field name="user_id" widget="many2one_avatar_user" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ================================================================
+         BÚSQUEDA
+         ================================================================ -->
+    <record id="crm_lead_view_search_stn_licitaciones" model="ir.ui.view">
+        <field name="name">crm.lead.search.stn.licitaciones</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.view_crm_case_opportunities_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="stn_no_procedimiento"/>
+                <field name="stn_convocante_id"/>
+                <field name="stn_cucop"/>
+            </xpath>
+            <xpath expr="//filter[@name='stage']" position="after">
+                <filter name="g_stn_nivel" string="Nivel LICIA" context="{'group_by': 'stn_viabilidad'}"/>
+                <filter name="g_stn_estatus" string="Estatus del procedimiento" context="{'group_by': 'stn_estatus_id'}"/>
+                <filter name="g_stn_resultado" string="Resultado" context="{'group_by': 'stn_resultado'}"/>
+                <filter name="g_stn_convocante" string="Convocante" context="{'group_by': 'stn_convocante_id'}"/>
+                <filter name="g_stn_estado" string="Estado" context="{'group_by': 'state_id'}"/>
+                <filter name="g_stn_servicio" string="Tipo de servicio" context="{'group_by': 'stn_tipo_servicio_id'}"/>
+                <filter name="g_stn_tipo" string="Tipo de procedimiento" context="{'group_by': 'stn_tipo_procedimiento_id'}"/>
+                <filter name="g_stn_empresa" string="Empresa del grupo" context="{'group_by': 'stn_empresa_licitante_id'}"/>
+            </xpath>
+            <xpath expr="//search" position="inside">
+                <separator/>
+                <filter name="stn_alto" string="Nivel 4-5" domain="[('stn_viabilidad', 'in', ['4', '5'])]"/>
+                <filter name="stn_semana" string="Límite interno en 7 días"
+                        domain="[('stn_fecha_limite_interna', '&gt;=', context_today().strftime('%Y-%m-%d')), ('stn_fecha_limite_interna', '&lt;=', (context_today() + relativedelta(days=7)).strftime('%Y-%m-%d'))]"/>
+                <filter name="stn_suspendidas" string="Suspendidas" domain="[('stn_estatus_id.code', '=', 'suspendido')]"/>
+                <filter name="stn_pendientes" string="Sin resultado" domain="[('stn_resultado', '=', 'pendiente')]"/>
+                <filter name="stn_ganadas" string="Ganadas (total o parcial)" domain="[('stn_resultado', 'in', ['ganada', 'parcial'])]"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- ================================================================
+         ANÁLISIS
+         ================================================================ -->
+    <record id="crm_lead_view_pivot_stn_licitaciones" model="ir.ui.view">
+        <field name="name">crm.lead.pivot.stn.licitaciones</field>
+        <field name="model">crm.lead</field>
+        <field name="priority">40</field>
+        <field name="arch" type="xml">
+            <pivot string="Análisis de licitaciones" sample="1">
+                <field name="stn_viabilidad" type="row"/>
+                <field name="stn_resultado" type="col"/>
+                <field name="stn_monto_maximo" type="measure"/>
+                <field name="stn_monto_adjudicado" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+    <record id="crm_lead_view_graph_stn_licitaciones" model="ir.ui.view">
+        <field name="name">crm.lead.graph.stn.licitaciones</field>
+        <field name="model">crm.lead</field>
+        <field name="priority">40</field>
+        <field name="arch" type="xml">
+            <graph string="Licitaciones" type="bar" sample="1">
+                <field name="stn_viabilidad"/>
+                <field name="stn_resultado"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- ================================================================
+         ACCIONES
+         ================================================================ -->
+    <record id="action_stn_licitaciones" model="ir.actions.act_window">
+        <field name="name">Licitaciones</field>
+        <field name="res_model">crm.lead</field>
+        <field name="view_mode">kanban,list,form,calendar,pivot,graph,activity</field>
+        <field name="domain">[('type', '=', 'opportunity'), ('team_id.stn_es_licitacion', '=', True)]</field>
+        <field name="context" eval="{'default_type': 'opportunity', 'default_team_id': ref('team_licitaciones'), 'stn_licitaciones': True, 'search_default_stn_pendientes': 1}"/>
+        <field name="search_view_id" ref="crm.view_crm_case_opportunities_filter"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Aún no hay licitaciones</p>
+            <p>LICIA las crea automáticamente al detectar procedimientos de interés en ComprasMX.</p>
+        </field>
+    </record>
+    <record id="action_stn_licitaciones_view_list" model="ir.actions.act_window.view">
+        <field name="sequence">2</field>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="crm_lead_view_list_stn_licitaciones"/>
+        <field name="act_window_id" ref="action_stn_licitaciones"/>
+    </record>
+
+    <record id="action_stn_licitaciones_analisis" model="ir.actions.act_window">
+        <field name="name">Análisis de licitaciones</field>
+        <field name="res_model">crm.lead</field>
+        <field name="view_mode">pivot,graph,list</field>
+        <field name="domain">[('type', '=', 'opportunity'), ('team_id.stn_es_licitacion', '=', True)]</field>
+        <field name="context">{'active_test': False, 'stn_licitaciones': True}</field>
+    </record>
+    <record id="action_stn_licitaciones_analisis_pivot" model="ir.actions.act_window.view">
+        <field name="sequence">1</field>
+        <field name="view_mode">pivot</field>
+        <field name="view_id" ref="crm_lead_view_pivot_stn_licitaciones"/>
+        <field name="act_window_id" ref="action_stn_licitaciones_analisis"/>
+    </record>
+    <record id="action_stn_licitaciones_analisis_graph" model="ir.actions.act_window.view">
+        <field name="sequence">2</field>
+        <field name="view_mode">graph</field>
+        <field name="view_id" ref="crm_lead_view_graph_stn_licitaciones"/>
+        <field name="act_window_id" ref="action_stn_licitaciones_analisis"/>
+    </record>
+    <record id="action_stn_licitaciones_analisis_list" model="ir.actions.act_window.view">
+        <field name="sequence">3</field>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="crm_lead_view_list_stn_licitaciones"/>
+        <field name="act_window_id" ref="action_stn_licitaciones_analisis"/>
+    </record>
+</odoo>

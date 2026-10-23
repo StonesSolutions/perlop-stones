@@ -1,0 +1,27 @@
+{
+  "fecha": "2026-10-15",
+  "plataformas": [
+    "ComprasMX",
+    "CFE"
+  ],
+  "revisados": 214,
+  "nuevos": 2,
+  "enviados": 1,
+  "resumen": "Dos procedimientos nuevos del giro; uno nivel 4 enviado a Odoo. Sin procedimientos de alimentos en CFE.",
+  "procedimientos": [
+    {
+      "numero_procedimiento": "IA-50-GYR-050GYR018-N-210-2026",
+      "descripcion": "Víveres 8 hospitales IMSS Tamaulipas",
+      "nivel": 4,
+      "recomendacion": "Perseguir con condición (suspendido)",
+      "es_nuevo": "NO"
+    },
+    {
+      "numero_procedimiento": "LA-50-GYR-050GYR075-N-151-2026",
+      "descripcion": "Víveres guarderías IMSS Querétaro",
+      "nivel": 2,
+      "recomendacion": "No perseguir: sin presencia",
+      "es_nuevo": "SI"
+    }
+  ]
+}

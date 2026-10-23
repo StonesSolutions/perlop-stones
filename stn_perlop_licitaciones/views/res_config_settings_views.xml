@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_stn_licitaciones" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.stn.licitaciones</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="crm.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//app[@name='crm']" position="inside">
+                <block title="Licitaciones" name="stn_licitaciones_block">
+                    <setting string="Equipo y responsable" help="Equipo donde LICIA crea las licitaciones y responsable por defecto (también es el usuario con el que entra la integración).">
+                        <div class="content-group">
+                            <div class="row mt8"><label for="stn_team_id" class="col-lg-4 o_light_label"/><field name="stn_team_id"/></div>
+                            <div class="row"><label for="stn_user_id" class="col-lg-4 o_light_label"/><field name="stn_user_id"/></div>
+                        </div>
+                    </setting>
+                    <setting string="Reglas de flujo" help="Nivel de viabilidad que pasa sola a «Análisis y decisión» y horas de anticipación para el límite interno.">
+                        <div class="content-group">
+                            <div class="row mt8"><label for="stn_nivel_analisis" class="col-lg-6 o_light_label"/><field name="stn_nivel_analisis"/></div>
+                            <div class="row"><label for="stn_horas_limite_interna" class="col-lg-6 o_light_label"/><field name="stn_horas_limite_interna"/></div>
+                            <div class="row"><label for="stn_tz" class="col-lg-6 o_light_label"/><field name="stn_tz"/></div>
+                        </div>
+                    </setting>
+                    <setting string="Avisos automáticos" help="Quién recibe «Revisar nueva licitación», el paso a análisis y el escalamiento cuando un límite interno vence sin atenderse; días de aviso previo al responsable.">
+                        <div class="content-group">
+                            <div class="row mt8"><label for="stn_usuarios_nueva_ids" class="col-lg-4 o_light_label"/><field name="stn_usuarios_nueva_ids" widget="many2many_avatar_user"/></div>
+                            <div class="row"><label for="stn_usuarios_analisis_ids" class="col-lg-4 o_light_label"/><field name="stn_usuarios_analisis_ids" widget="many2many_avatar_user"/></div>
+                            <div class="row"><label for="stn_usuarios_gerencia_ids" class="col-lg-4 o_light_label"/><field name="stn_usuarios_gerencia_ids" widget="many2many_avatar_user"/></div>
+                            <div class="row"><label for="stn_dias_aviso" class="col-lg-4 o_light_label"/><field name="stn_dias_aviso"/></div>
+                        </div>
+                    </setting>
+                </block>
+                <block title="LICIA · parámetros de búsqueda" name="stn_licia_params_block">
+                    <setting string="Integración LICIA" help="Activa la entrada de fichas por HTTP y correo.">
+                        <field name="stn_licia_activo"/>
+                        <div class="content-group" invisible="not stn_licia_activo">
+                            <div class="row mt8"><label for="stn_palabras_clave" class="col-lg-4 o_light_label"/><field name="stn_palabras_clave"/></div>
+                            <div class="row"><label for="stn_licia_estado_ids" class="col-lg-4 o_light_label"/><field name="stn_licia_estado_ids" widget="many2many_tags"/></div>
+                            <div class="row"><label for="stn_licia_tipo_servicio_ids" class="col-lg-4 o_light_label"/><field name="stn_licia_tipo_servicio_ids" widget="many2many_tags"/></div>
+                            <div class="row"><label for="stn_nivel_minimo" class="col-lg-4 o_light_label"/><field name="stn_nivel_minimo"/></div>
+                            <div class="row"><label for="stn_instrucciones" class="col-lg-4 o_light_label"/><field name="stn_instrucciones"/></div>
+                        </div>
+                    </setting>
+                    <setting string="Entrada de fichas" help="LICIA envía la ficha (JSON) a este endpoint con el token, o al alias de correo del equipo." invisible="not stn_licia_activo">
+                        <div class="content-group">
+                            <div class="row mt8"><label for="stn_endpoint_ficha" class="col-lg-4 o_light_label"/><field name="stn_endpoint_ficha" readonly="1" widget="CopyClipboardChar"/></div>
+                            <div class="row"><label for="stn_endpoint_parametros" class="col-lg-4 o_light_label"/><field name="stn_endpoint_parametros" readonly="1" widget="CopyClipboardChar"/></div>
+                            <div class="row" groups="base.group_system"><label for="stn_token" class="col-lg-4 o_light_label"/><field name="stn_token" password="True"/></div>
+                            <div class="row"><label for="stn_alias_correo" class="col-lg-4 o_light_label"/><field name="stn_alias_correo" readonly="1"/></div>
+                            <div class="mt8">
+                                <button name="action_stn_generar_token" type="object" string="Generar nuevo token" icon="fa-key" class="btn-link" groups="base.group_system"/>
+                                <button name="action_stn_ver_bitacora" type="object" string="Ver bitácora" icon="fa-list" class="btn-link"/>
+                            </div>
+                        </div>
+                    </setting>
+                </block>
+                <block title="Cuenta de Claude · agente" name="stn_claude_block">
+                    <setting string="Agente en Claude" help="Rutina de Claude (claude.ai/code/routines) que ejecuta LICIA. Con disparo por API, Odoo la lanza y le manda los parámetros de búsqueda.">
+                        <div class="content-group">
+                            <div class="row mt8"><label for="stn_claude_modo" class="col-lg-4 o_light_label"/><field name="stn_claude_modo"/></div>
+                            <div class="row"><label for="stn_claude_agente" class="col-lg-4 o_light_label"/><field name="stn_claude_agente"/></div>
+                            <div class="row"><label for="stn_claude_cuenta" class="col-lg-4 o_light_label"/><field name="stn_claude_cuenta"/></div>
+                            <div invisible="stn_claude_modo != 'rutina_api'">
+                                <div class="row"><label for="stn_claude_routine_url" class="col-lg-4 o_light_label"/><field name="stn_claude_routine_url"/></div>
+                                <div class="row" groups="base.group_system"><label for="stn_claude_routine_token" class="col-lg-4 o_light_label"/><field name="stn_claude_routine_token" password="True"/></div>
+                                <div class="row"><label for="stn_claude_beta" class="col-lg-4 o_light_label"/><field name="stn_claude_beta"/></div>
+                                <div class="row"><label for="stn_claude_ultima_sesion" class="col-lg-4 o_light_label"/><field name="stn_claude_ultima_sesion" widget="url"/></div>
+                                <div class="mt8">
+                                    <button name="action_stn_disparar_rutina" type="object" string="Ejecutar LICIA ahora" icon="fa-play" class="btn-primary"/>
+                                </div>
+                                <div class="text-muted mt8">Para programarla desde Odoo activa la acción planificada «Licitaciones: disparar rutina LICIA en Claude».</div>
+                            </div>
+                        </div>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+</odoo>

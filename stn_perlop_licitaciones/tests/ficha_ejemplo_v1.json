@@ -1,0 +1,664 @@
+{
+  "version": "1.0",
+  "origen": "LICIA",
+  "corte": "2026-10-15 11:00",
+  "fechas_verificadas": "2026-10-15 10:50",
+  "numero_procedimiento": "IA-50-GYR-050GYR018-N-210-2026",
+  "nombre_oportunidad": "IA-50-GYR-050GYR018-N-210-2026 · Víveres para 8 hospitales del régimen ordinario (nov-dic 2026) · IMSS Tamaulipas",
+  "nivel_licia": 4,
+  "accion": "PERSEGUIR (con condición) · EN ESPERA: procedimiento suspendido",
+  "estatus_procedimiento": "SUSPENDIDO",
+  "plataforma": "ComprasMX",
+  "folio_plataforma": "N/A",
+  "url_ficha": "https://comprasmx.buengobierno.gob.mx/sitiopublico/#/sitiopublico/detalle/2f2243ad7f8347a3ae585f86f90080d3/procedimiento",
+  "tipo_procedimiento": "Invitación a cuando menos tres personas (art. 54 fr. IX LAASSP)",
+  "caracter": "Nacional",
+  "criterio": "Puntos y porcentajes 50/50",
+  "minimo_tecnico": 37.5,
+  "dependencia": "IMSS",
+  "convocante": "IMSS - OOAD Regional Tamaulipas",
+  "unidad_compradora": "050GYR018 Jefatura de Servicios Administrativos, Coordinación de Abastecimiento y Equipamiento",
+  "area_requirente": "Coordinación Delegacional de Nutrición y Dietética",
+  "estado": "Tamaulipas",
+  "plaza": "Tamaulipas (8 unidades médicas)",
+  "operamos_en_estado": "SI",
+  "objeto": "Adquisición de víveres para las unidades médicas hospitalarias del régimen ordinario (noviembre-diciembre 2026)",
+  "tipo_servicio": "Suministro de víveres",
+  "cucop": "22102-0394",
+  "monto_minimo": 5267286.87,
+  "monto_maximo": 13168217.17,
+  "nota_montos": "Mínimo y máximo oficiales del numeral 2.2. La suma por partida da $5,267,286.89 y $13,168,217.18 (redondeo de la convocante). La licitación anterior cubría ~11.5 meses; ésta, 2 (14.8 % de aquel máximo).",
+  "vigencia_inicio": "2026-11-01 00:00",
+  "vigencia_fin": "2026-12-31 23:59",
+  "garantia_pct": 10,
+  "conjunta_permitida": "SI",
+  "cliente_nuevo": "NO",
+  "lectura": "Lo legal lo tenemos o se genera en un día; lo que decide es lo sanitario local y reciente: aviso de funcionamiento por unidad, inspección NOM-251 de 3 meses por unidad, acta de visita por grupo y por unidad, 8 estudios clínicos y análisis microbiológicos EMA. Sin los análisis (14 puntos) el techo técnico es 36 y no se llega a 37.5.",
+  "razon_nivel": "Nivel 4: es víveres del IMSS con el formato que el grupo conoce y con contratos que acreditan experiencia; operamos en Tamaulipas según el mapa de presencia. Baja a nivel 2 si los papeles sanitarios locales y los análisis EMA no se consiguen o no se flexibilizan. Vía alterna: propuesta conjunta con un proveedor que ya tenga establecimiento, inspección y flota en Tamaulipas (3.6, Anexo 14).",
+  "fecha_deteccion": "2026-10-09 08:09",
+  "fecha_publicacion": "2026-10-08 16:36",
+  "fecha_limite_preguntas": "2026-10-12 10:00",
+  "fecha_junta": "N/A",
+  "fecha_cierre_junta": "N/A",
+  "fecha_visita": "N/A",
+  "fecha_muestras": "N/A",
+  "fecha_apertura": "2026-10-15 10:00",
+  "fecha_limite_interna": "2026-10-12 10:00",
+  "fecha_fallo": "2026-10-20 10:00",
+  "fecha_inicio_contrato": "2026-11-03 00:00",
+  "eventos": [
+    {
+      "tipo": "publicacion",
+      "fecha_oficial": "2026-10-08 16:36",
+      "fecha_limite_interna": "N/A",
+      "fuente": "Ficha ComprasMX"
+    },
+    {
+      "tipo": "limite_preguntas",
+      "fecha_oficial": "2026-10-12 10:00",
+      "fecha_limite_interna": "2026-10-12 10:00",
+      "fuente": "Ficha ComprasMX",
+      "nota": "Plazo oficial"
+    },
+    {
+      "tipo": "junta",
+      "fecha_oficial": "N/A",
+      "aplica": "NO",
+      "fuente": "3.4: «NO APLICA»"
+    },
+    {
+      "tipo": "visita",
+      "fecha_oficial": "N/A",
+      "aplica": "NO"
+    },
+    {
+      "tipo": "muestras",
+      "fecha_oficial": "N/A",
+      "aplica": "NO"
+    },
+    {
+      "tipo": "apertura",
+      "fecha_oficial": "2026-10-15 10:00",
+      "fecha_limite_interna": "2026-10-12 10:00",
+      "fuente": "Ficha ComprasMX",
+      "nota": "Límite interno 72 h antes; coincide con el límite de preguntas"
+    },
+    {
+      "tipo": "fallo",
+      "fecha_oficial": "2026-10-20 10:00",
+      "fuente": "Ficha ComprasMX"
+    },
+    {
+      "tipo": "inicio_contrato",
+      "fecha_oficial": "2026-11-03 00:00",
+      "fuente": "Ficha ComprasMX (estimada)"
+    }
+  ],
+  "historial": [
+    {
+      "fecha": "2026-10-10",
+      "campo": "Estatus",
+      "antes": "VIGENTE",
+      "despues": "SUSPENDIDO",
+      "fuente": "Ficha de ComprasMX; sus 4 anexos no traen acta que diga por qué"
+    },
+    {
+      "fecha": "2026-10-11",
+      "campo": "Visibilidad en el portal",
+      "antes": "En «Anuncios vigentes»",
+      "despues": "Fuera de «Anuncios vigentes»; la ficha conserva la apertura del 15-oct 10:00",
+      "fuente": "Exportación de ComprasMX"
+    },
+    {
+      "fecha": "2026-10-15",
+      "campo": "Apertura",
+      "antes": "Programada 2026-10-15 10:00",
+      "despues": "No celebrada: el procedimiento sigue SUSPENDIDO",
+      "fuente": "Ficha de ComprasMX, consulta en vivo"
+    }
+  ],
+  "junta": {
+    "aplica": "NO",
+    "aclaraciones": "Por ComprasMX hasta 2026-10-12 10:00",
+    "acta": "Sin acta de aclaraciones: la ficha sólo tiene 4 anexos (invitación, anexo técnico, modelo de contrato, justificación) y el procedimiento se suspendió el 10-oct"
+  },
+  "preguntas": [
+    {
+      "numero": 1,
+      "pregunta": "¿Un solo aviso de funcionamiento del centro de distribución ampara los 4 grupos en todas las unidades? ¿Vale el acuse del trámite?",
+      "numeral": "6.1.1 · Anexo 2 p. 24",
+      "estado": "SUGERIDA · SIN CONSTANCIA DE ENVÍO",
+      "respuesta": "N/A"
+    },
+    {
+      "numero": 2,
+      "pregunta": "¿Se acepta la solicitud de visita o el dictamen de un tercero en lugar de la inspección sanitaria? ¿Puede ser de 12 meses? ¿Una sola inspección vale para todas las unidades?",
+      "numeral": "p. 30 · Anexo 2 p. 25",
+      "estado": "SUGERIDA · SIN CONSTANCIA DE ENVÍO"
+    },
+    {
+      "numero": 3,
+      "pregunta": "¿Una misma acta de verificación vale para todos los grupos y unidades? ¿Qué antigüedad máxima?",
+      "numeral": "p. 31 · Anexo 2 p. 26",
+      "estado": "SUGERIDA · SIN CONSTANCIA DE ENVÍO"
+    },
+    {
+      "numero": 4,
+      "pregunta": "Confirmar que el informe EMA de instalaciones (NOM-251) sólo se pide en la recepción, no en la propuesta",
+      "numeral": "Anexo 1 num. 3 p. 12",
+      "estado": "SUGERIDA · SIN CONSTANCIA DE ENVÍO"
+    },
+    {
+      "numero": 5,
+      "pregunta": "Estudios clínicos: ¿uno por unidad? ¿El mismo trabajador para las dos de Reynosa? ¿Rayos X sin EMA? ¿6 meses?",
+      "numeral": "p. 30",
+      "estado": "SUGERIDA · SIN CONSTANCIA DE ENVÍO"
+    },
+    {
+      "numero": 6,
+      "pregunta": "Vehículos: ¿10 años o modelo 2009? ¿Cuál es el «inciso S) del 6.2»? ¿Caja seca para abarrotes? ¿Un vehículo para las dos de Reynosa?",
+      "numeral": "p. 36 · Anexo 2 pp. 27 y 45",
+      "estado": "SUGERIDA · SIN CONSTANCIA DE ENVÍO"
+    },
+    {
+      "numero": 7,
+      "pregunta": "Análisis: ¿cuántos productos son el 10 %? ¿A nombre del fabricante? ¿6 meses?",
+      "numeral": "6.1.1 a pp. 31-33",
+      "estado": "SUGERIDA · SIN CONSTANCIA DE ENVÍO"
+    },
+    {
+      "numero": 8,
+      "pregunta": "¿Se puede ofertar una o varias unidades sin ofertar las ocho?",
+      "numeral": "2.2 p. 8 · Anexo 1 num. 2",
+      "estado": "SUGERIDA · SIN CONSTANCIA DE ENVÍO"
+    },
+    {
+      "numero": 9,
+      "pregunta": "¿El 80 % de lugares son 7 de 8 por contrato? ¿Cuentan guarderías para experiencia?",
+      "numeral": "p. 39",
+      "estado": "SUGERIDA · SIN CONSTANCIA DE ENVÍO"
+    },
+    {
+      "numero": 10,
+      "pregunta": "HGR 270 y HGSZ 17: ¿qué domicilio prevalece?",
+      "numeral": "Anexo 2 pp. 5-6 · Apéndice 2",
+      "estado": "SUGERIDA · SIN CONSTANCIA DE ENVÍO"
+    },
+    {
+      "numero": 11,
+      "pregunta": "¿Basta la e.firma, sin firma autógrafa escaneada?",
+      "numeral": "Anexo 2 p. 46 · 4.1",
+      "estado": "SUGERIDA · SIN CONSTANCIA DE ENVÍO"
+    },
+    {
+      "numero": 12,
+      "pregunta": "Confirmar que no se requiere carta para el grupo 4 «Nieves y helados»",
+      "numeral": "p. 34",
+      "estado": "SUGERIDA · SIN CONSTANCIA DE ENVÍO"
+    }
+  ],
+  "partidas": [
+    {
+      "numero": 1,
+      "unidad": "HGZMF 1",
+      "municipio": "Victoria",
+      "minimo": 571303.8,
+      "maximo": 1428259.49,
+      "maximo_anterior": 9512129.4,
+      "participamos": "POR DECIDIR",
+      "ganada": "N/A",
+      "domicilio": "Centro Médico Educativo y Cultural «Adolfo López Mateos», C.P. 87120",
+      "domicilio_alterno": "Blvd. Adolfo López Mateos S/N, Col. Pedro Sosa, C.P. 87120 (lo llama HGSZMF 1)",
+      "corredor": "Centro",
+      "vehiculos": "1 camioneta con thermoking, uso exclusivo para alimentos",
+      "cedis": "N/A (sin CEDIS registrado en Tamaulipas)"
+    },
+    {
+      "numero": 2,
+      "unidad": "HGZ 3",
+      "municipio": "El Mante",
+      "minimo": 594030.26,
+      "maximo": 1485075.65,
+      "maximo_anterior": 12200332.67,
+      "participamos": "POR DECIDIR",
+      "ganada": "N/A",
+      "domicilio": "Blvd. Luis Echeverría Álvarez Nº 300, Col. Zona Centro, C.P. 89800",
+      "domicilio_alterno": "Blvd. Luis Echeverría N° 300, Zona Centro, C.P. 89800",
+      "corredor": "Sur",
+      "vehiculos": "1 camioneta con thermoking, uso exclusivo para alimentos",
+      "cedis": "N/A"
+    },
+    {
+      "numero": 3,
+      "unidad": "HGR 6",
+      "municipio": "Ciudad Madero",
+      "minimo": 1239218.53,
+      "maximo": 3098046.32,
+      "maximo_anterior": 18755142.35,
+      "participamos": "POR DECIDIR",
+      "ganada": "N/A",
+      "domicilio": "Blvd. «Lic. Adolfo López Mateos», Ave. Zapotal (sin C.P.)",
+      "domicilio_alterno": "Blvd. Adolfo López Mateos S/N, Col. Las Conchitas (sin C.P.)",
+      "corredor": "Sur",
+      "vehiculos": "1 camioneta con thermoking, uso exclusivo para alimentos",
+      "cedis": "N/A"
+    },
+    {
+      "numero": 4,
+      "unidad": "HGZ 11",
+      "municipio": "Nuevo Laredo",
+      "minimo": 443406.65,
+      "maximo": 1108516.62,
+      "maximo_anterior": 7666980.35,
+      "participamos": "POR DECIDIR",
+      "ganada": "N/A",
+      "domicilio": "Calle Victoria y Reynosa, Sector Centro, C.P. 88000",
+      "domicilio_alterno": "Calle Victoria y Reynosa, Col. Sector Centro, C.P. 88000",
+      "corredor": "Frontera",
+      "vehiculos": "1 camioneta con thermoking, uso exclusivo para alimentos",
+      "cedis": "N/A"
+    },
+    {
+      "numero": 5,
+      "unidad": "HGZ 13",
+      "municipio": "Matamoros",
+      "minimo": 844794.4,
+      "maximo": 2111986.0,
+      "maximo_anterior": 14075258.15,
+      "participamos": "POR DECIDIR",
+      "ganada": "N/A",
+      "domicilio": "Calle Sexta Ocampo y Mina No. 800 (sin C.P.)",
+      "domicilio_alterno": "Sexta Ocampo y Mina 800, Matamoros Centro, C.P. 87300",
+      "corredor": "Frontera",
+      "vehiculos": "1 camioneta con thermoking, uso exclusivo para alimentos",
+      "cedis": "N/A"
+    },
+    {
+      "numero": 6,
+      "unidad": "HGZ 15",
+      "municipio": "Reynosa",
+      "minimo": 881743.73,
+      "maximo": 2204359.32,
+      "maximo_anterior": 13731170.44,
+      "participamos": "POR DECIDIR",
+      "ganada": "N/A",
+      "domicilio": "Blvd. Hidalgo No. 2000, Col. Del Valle, C.P. 88620",
+      "domicilio_alterno": "Blvd. Hidalgo N° 2000, Col. Del Valle, C.P. 88620",
+      "corredor": "Frontera",
+      "vehiculos": "1 camioneta con thermoking, uso exclusivo para alimentos",
+      "cedis": "N/A"
+    },
+    {
+      "numero": 7,
+      "unidad": "HGSZ 17",
+      "municipio": "Miguel Alemán",
+      "minimo": 127954.37,
+      "maximo": 319885.91,
+      "maximo_anterior": 3082280.43,
+      "participamos": "POR DECIDIR",
+      "ganada": "N/A",
+      "domicilio": "Calle DIF Nº 255 entre Juan Escutia y Niños Héroes, Col. Niños Héroes, C.P. 88300",
+      "domicilio_alterno": "DIF S/N entre Niños Héroes y Juan Escutia, C.P. 88302",
+      "domicilio_inconsistente": "SI",
+      "corredor": "Frontera",
+      "vehiculos": "1 camioneta con thermoking, uso exclusivo para alimentos",
+      "cedis": "N/A",
+      "nota": "Entrega sólo lunes y jueves"
+    },
+    {
+      "numero": 8,
+      "unidad": "HGR 270",
+      "municipio": "Reynosa",
+      "minimo": 564835.15,
+      "maximo": 1412087.87,
+      "maximo_anterior": 9709358.88,
+      "participamos": "POR DECIDIR",
+      "ganada": "N/A",
+      "domicilio": "Carretera Reynosa–San Fernando km 102, Polígono C Nº 8200, Fracc. Pirámides III, C.P. 88501",
+      "domicilio_alterno": "Carretera Reynosa–Victoria km 4.5",
+      "domicilio_inconsistente": "SI",
+      "corredor": "Frontera",
+      "vehiculos": "1 camioneta con thermoking, uso exclusivo para alimentos",
+      "cedis": "N/A"
+    }
+  ],
+  "logistica_nota": "8 camionetas con thermoking, una por Departamento de Nutrición, de uso exclusivo, con factura o arrendamiento (Anexo 2 p. 27). Antigüedad contradictoria: «no mayor a 10 años» frente a «no anterior al modelo 2009». Entrega lunes a domingo y festivos 06:00-08:00; tortilla 06:00, 12:00 y 18:00; Miguel Alemán sólo lunes y jueves. Órdenes con 14 días naturales; pan fresco con orden diaria. No hay CEDIS registrado en Tamaulipas: la distancia queda pendiente.",
+  "requisitos": [
+    {
+      "referencia": "6.1.1 · Anexo 2 p. 24",
+      "requisito": "Aviso de funcionamiento que ampare los 4 grupos, por unidad (Miguel Alemán puede usar el de la unidad cercana); acepta trámite en proceso o apertura",
+      "tipo": "Técnico",
+      "situacion": "CONSEGUIR",
+      "efecto": "DESECHA",
+      "vigencia_maxima": "Vigente",
+      "categoria": "Sanitario"
+    },
+    {
+      "referencia": "p. 30 · Anexo 2 p. 25",
+      "requisito": "Inspección sanitaria NOM-251 al 100 % de transporte y refrigeración, por la autoridad sanitaria, indicando la unidad",
+      "tipo": "Técnico",
+      "situacion": "CONSEGUIR",
+      "efecto": "DESECHA",
+      "vigencia_maxima": "3 meses (desde 2026-07-15)",
+      "categoria": "Sanitario"
+    },
+    {
+      "referencia": "p. 31 · Anexo 2 p. 26",
+      "requisito": "Última acta de visita de verificación sanitaria, por grupo y por unidad",
+      "tipo": "Técnico",
+      "situacion": "CONSEGUIR",
+      "efecto": "DESECHA",
+      "vigencia_maxima": "Sin antigüedad fija",
+      "categoria": "Sanitario"
+    },
+    {
+      "referencia": "p. 30",
+      "requisito": "Estudios clínicos de 1 trabajador por unidad (8), 7 pruebas, laboratorio EMA + documento de su acreditación",
+      "tipo": "Técnico",
+      "situacion": "CONSEGUIR",
+      "efecto": "DESECHA",
+      "vigencia_maxima": "3 meses (desde 2026-07-15)",
+      "categoria": "Laboratorios",
+      "extracto_literal": "Estudios clínicos de 1 trabajador por unidad, con antigüedad no mayor a 3 meses, emitidos por laboratorio acreditado ante la EMA, anexando documento de su acreditación."
+    },
+    {
+      "referencia": "p. 31",
+      "requisito": "Grupo 1 por unidad: carta TIF, carta del fabricante de huevo y lácteos, etiquetas de jamón y salchicha, fotos de lácteos (NOM-184)",
+      "tipo": "Técnico",
+      "situacion": "CARTAS: CONSEGUIR · FOTOS: SE GENERA",
+      "efecto": "DESECHA",
+      "vigencia_maxima": "N/A"
+    },
+    {
+      "referencia": "4.3 · Apéndice 1",
+      "requisito": "Descripción amplia de los 164 renglones con marca + escrito de cumplimiento de normas y criterios de recepción",
+      "tipo": "Técnico",
+      "situacion": "SE GENERA",
+      "efecto": "DESECHA",
+      "vigencia_maxima": "N/A"
+    },
+    {
+      "referencia": "6.1.1 a · pp. 31-33",
+      "requisito": "Análisis microbiológicos EMA (10 % de perecederos de alto riesgo + 15 no perecederos) y clembuterol EMA por tipo de carne",
+      "tipo": "Puntos (14)",
+      "situacion": "CONSEGUIR",
+      "efecto": "SIN ELLOS NO SE LLEGA A 37.5",
+      "vigencia_maxima": "3 meses (desde 2026-07-15)",
+      "categoria": "Laboratorios"
+    },
+    {
+      "referencia": "4.2.5.1",
+      "requisito": "Acuse electrónico del manifiesto de vínculos + escritura o poder de quien lo presentó",
+      "tipo": "Legal",
+      "situacion": "TENEMOS (acuse 29-jul) · VERIFICAR",
+      "efecto": "DESECHA · YA NOS COSTÓ UNA LICITACIÓN",
+      "vigencia_maxima": "N/A",
+      "categoria": "Legal y fiscal"
+    },
+    {
+      "referencia": "4.2.1 · Anexo 3",
+      "requisito": "Facultades y personalidad con relación de accionistas vigente",
+      "tipo": "Legal",
+      "situacion": "TENEMOS · VERIFICAR SOCIOS",
+      "efecto": "DESECHA",
+      "vigencia_maxima": "N/A",
+      "categoria": "Legal y fiscal"
+    },
+    {
+      "referencia": "4.2.2 a 4.2.9",
+      "requisito": "Escritos: correo, arts. 71 y 90, integridad, ventaja indebida, no subcontratar, nacionalidad y 65 % nacional, normas",
+      "tipo": "Legal",
+      "situacion": "SE GENERA",
+      "efecto": "DESECHA",
+      "vigencia_maxima": "N/A",
+      "categoria": "Legal y fiscal"
+    },
+    {
+      "referencia": "Anexo 2 p. 27",
+      "requisito": "8 camionetas con thermoking, relación por unidad y fotos",
+      "tipo": "Puntos (5) y condición",
+      "situacion": "VERIFICAR",
+      "efecto": "CONDICIÓN",
+      "vigencia_maxima": "10 años o modelo 2009 (se contradice)",
+      "categoria": "Vehículos"
+    },
+    {
+      "referencia": "pp. 33-35",
+      "requisito": "Durabilidad: constancia TIF, Directorio SENASICA y cartas originales de TIF, fabricantes, distribuidores y certificador",
+      "tipo": "Puntos (7.25)",
+      "situacion": "CONSEGUIR CARTAS",
+      "efecto": "0 PUNTOS SI FALTA UNA",
+      "vigencia_maxima": "N/A"
+    },
+    {
+      "referencia": "pp. 38-41",
+      "requisito": "Especialidad y cumplimiento: contratos de 12 meses con 7 de 8 sedes y cartas de cumplimiento o liberación de fianza",
+      "tipo": "Puntos (15)",
+      "situacion": "VERIFICAR SEDES",
+      "efecto": "PUNTOS",
+      "vigencia_maxima": "N/A",
+      "categoria": "Experiencia y contratos"
+    },
+    {
+      "referencia": "Anexo 1 pp. 16-17",
+      "requisito": "Pan del día y tortilla tres veces al día (06:00, 12:00, 18:00) en las 8 unidades",
+      "tipo": "Operativo",
+      "situacion": "VERIFICAR",
+      "efecto": "CUMPLIMIENTO",
+      "vigencia_maxima": "N/A"
+    },
+    {
+      "referencia": "3.11 f, g, h",
+      "requisito": "Opiniones de cumplimiento SAT, IMSS e INFONAVIT",
+      "tipo": "Legal",
+      "situacion": "SE GENERA",
+      "efecto": "NO DESECHA",
+      "vigencia_maxima": "IMSS: el mismo día",
+      "categoria": "Legal y fiscal"
+    },
+    {
+      "referencia": "4.4 · Anexo 9",
+      "requisito": "Propuesta económica (detalle y resumen)",
+      "tipo": "Económico",
+      "situacion": "SE GENERA",
+      "efecto": "DESECHA",
+      "vigencia_maxima": "N/A"
+    },
+    {
+      "referencia": "4.1 · 5.26",
+      "requisito": "e.firma en toda la proposición y folio en todas las hojas",
+      "tipo": "Forma",
+      "situacion": "SE GENERA",
+      "efecto": "DESECHA",
+      "vigencia_maxima": "N/A"
+    }
+  ],
+  "puntos": [
+    {
+      "rubro": "Características · a) técnicas",
+      "puntos": 14,
+      "entregable": "Microbiológicos y clembuterol EMA, 3 meses o menos",
+      "situacion": "FALTA · DECIDE EL 37.5"
+    },
+    {
+      "rubro": "Características · b) contenido nacional",
+      "puntos": 3.75,
+      "entregable": "Escrito, 65 %",
+      "situacion": "SE GENERA"
+    },
+    {
+      "rubro": "Características · c) durabilidad",
+      "puntos": 7.25,
+      "entregable": "TIF, SENASICA, cartas originales, carta del certificador",
+      "situacion": "FALTAN CARTAS"
+    },
+    {
+      "rubro": "Capacidad · a) recursos económicos",
+      "puntos": 1,
+      "entregable": "Declaración anual 2024 y última provisional",
+      "situacion": "TENEMOS"
+    },
+    {
+      "rubro": "Capacidad · b) vehículos",
+      "puntos": 5,
+      "entregable": "8 camionetas con thermoking",
+      "situacion": "VERIFICAR"
+    },
+    {
+      "rubro": "Capacidad · c) personal con discapacidad",
+      "puntos": 0.5,
+      "entregable": "5 % de la plantilla",
+      "situacion": "VERIFICAR"
+    },
+    {
+      "rubro": "Capacidad · d) MIPYME con innovación",
+      "puntos": 0.5,
+      "entregable": "Constancia IMPI",
+      "situacion": "NO APLICA"
+    },
+    {
+      "rubro": "Capacidad · e) equidad de género",
+      "puntos": 0.5,
+      "entregable": "Certificación NOM-025",
+      "situacion": "TENEMOS"
+    },
+    {
+      "rubro": "Experiencia",
+      "puntos": 2.5,
+      "entregable": "Contratos concluidos 2014-2025",
+      "situacion": "TENEMOS"
+    },
+    {
+      "rubro": "Especialidad",
+      "puntos": 5,
+      "entregable": "Hasta 7 contratos con 7 de 8 sedes",
+      "situacion": "VERIFICAR"
+    },
+    {
+      "rubro": "Cumplimiento de contratos",
+      "puntos": 10,
+      "entregable": "Cartas de cumplimiento o liberación de fianza",
+      "situacion": "VERIFICAR"
+    }
+  ],
+  "antecedentes": [
+    {
+      "procedimiento": "LA-50-GYR-050GYR018-N-1-2026",
+      "participamos": "NO",
+      "razon_mismo": "Misma UC 050GYR018, mismo objeto y CUCoP 22102-0394, los mismos 8 hospitales en el mismo orden, mismo criterio 50/50 con mínimo 37.5. El grupo tampoco participó en N-173-2025 ni N-18-2025.",
+      "ganador": "Arturo Garza Hernández («Don Sazón»)",
+      "puntos_ganador": 47.0,
+      "contrato": "D6M0013",
+      "como_gano": "Único solvente: los otros 3 se desecharon por entregar el manifiesto de vínculos en escrito y no por el medio electrónico",
+      "precio_a_vencer": "Cotizó entre el 95 % y el 99.99 % del máximo de cada partida: no hubo competencia de precio",
+      "monto_maximo": 88732652.67,
+      "vigencia": "15-ene al 31-dic-2026 (máximo «con IVA» según el fallo)",
+      "desiertas": [
+        "LA-50-GYR-050GYR018-N-14-2024",
+        "LA-50-GYR-050GYR018-N-233-2023",
+        "IA-50-GYR-050GYR018-N-380-2023"
+      ],
+      "hipotesis": "El contrato D6M0013 vence el 31-dic y esta invitación recontrata nov-dic: pudo agotarse o terminarse antes. Ningún documento lo confirma.",
+      "criterio": "Puntos y porcentajes 50/50, mínimo 37.5",
+      "participantes": "Arturo Garza Hernández 47.0 · COMERTAM desechado · GOSACA desechada (bajo 37.5) · Tecnomédica Rivpon 18.97"
+    }
+  ],
+  "competidores": [
+    {
+      "nombre": "COMERTAM, S.A. de C.V.",
+      "historia": "Ganó P4-P8 en 2024 y 2025; en 2026 desechado y 9 % arriba del máximo",
+      "lectura": "Incumbente de la franja norte"
+    },
+    {
+      "nombre": "NEROSTE + PROCESADORA DE ALIMENTOS GOSACA (conjunta)",
+      "historia": "Ganó P1-P3 en 2024 y 2025; en 2026 GOSACA sola, desechada y bajo 37.5 puntos",
+      "lectura": "Incumbente del sur; sin su socio no alcanzó"
+    },
+    {
+      "nombre": "Arturo Garza Hernández («Don Sazón»)",
+      "historia": "Ganó las 8 partidas en 2026 (47.0 puntos)",
+      "lectura": "Entrante; el único con papeles completos"
+    },
+    {
+      "nombre": "Tecnomédica Rivpon + Francisco Javier Mendiola Alanís",
+      "historia": "Sólo P3 en 2026; desechada (18.97 puntos)",
+      "lectura": "Ocasional"
+    }
+  ],
+  "resultado": {
+    "apertura_celebrada": "NO (suspendida)",
+    "lugar_precios": "N/A",
+    "fallo": "N/A",
+    "causa_literal": "N/A",
+    "motivo_perdida": "N/A"
+  },
+  "pendientes_fallo": [
+    {
+      "pendiente": "Constancia REPIIMSS",
+      "plazo": "Antes de firmar",
+      "fecha": "2026-11-10",
+      "fuente": "Anexo 15",
+      "estado": "SE ACTIVA AL GANAR"
+    },
+    {
+      "pendiente": "Constancia de situación fiscal vigente",
+      "plazo": "Antes de firmar",
+      "fecha": "2026-11-10",
+      "fuente": "Análisis de requisitos LICIA",
+      "estado": "SE ACTIVA AL GANAR"
+    },
+    {
+      "pendiente": "Firma del contrato",
+      "plazo": "15 días hábiles tras el fallo",
+      "fecha": "2026-11-10",
+      "fuente": "Invitación 3.10",
+      "estado": "SE ACTIVA AL GANAR"
+    },
+    {
+      "pendiente": "Garantía de cumplimiento (10 % del máximo adjudicado, a nombre de la Tesorería de la Federación)",
+      "plazo": "10 días naturales tras la firma",
+      "fecha": "Firma + 10 días naturales",
+      "fuente": "Ficha de ComprasMX · Anexo 2",
+      "estado": "SE ACTIVA AL GANAR"
+    }
+  ],
+  "seguimiento": [
+    {
+      "fecha": "2026-10-09",
+      "texto": "Detectada en ComprasMX · Nivel 4, perseguir con condición. Se entregaron la invitación, el anexo técnico, el análisis de requisitos con 12 preguntas y el análisis del contrato anterior (08:38-09:02)."
+    },
+    {
+      "fecha": "2026-10-10",
+      "texto": "Aparece SUSPENDIDA en ComprasMX, sin acta que lo explique."
+    },
+    {
+      "fecha": "2026-10-11",
+      "texto": "Ya no aparece en «Anuncios vigentes». La ficha conserva la apertura del 15-oct 10:00."
+    },
+    {
+      "fecha": "2026-10-12",
+      "texto": "Sigue fuera de «Anuncios vigentes»."
+    },
+    {
+      "fecha": "2026-10-13 y 14",
+      "texto": "Sin consulta: no está en participación ni en la vigilancia horaria."
+    },
+    {
+      "fecha": "2026-10-15",
+      "texto": "Consulta en vivo: sigue SUSPENDIDO, 4 anexos, mismas fechas. La apertura de las 10:00 no se celebró."
+    }
+  ],
+  "documentos": {
+    "carpeta": "LICITACIONES/2026-10-09/NIVEL_4/VIVERES/IA-50-GYR-050GYR018-N-210-2026_viveres_IMSS_Tamaulipas",
+    "archivos": [
+      "Invitacion.pdf",
+      "Anexo_Tecnico.pdf",
+      "src/Lugares_de_entrega.pdf",
+      "src/Requerimiento.xlsx",
+      "Requisitos_IA-50-GYR-050GYR018-N-210-2026.pdf",
+      "contrato_anterior/Analisis_contrato_anterior_LA-50-GYR-050GYR018-N-1-2026.pdf"
+    ]
+  },
+  "adjuntos": [],
+  "requiere_poliza_rc": "NO"
+}

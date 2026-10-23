@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Etapas del semáforo de requisitos (Studio: x_requisitos_stage) -->
+        <record id="req_etapa_tramite" model="stn.requisito.etapa"><field name="name">En trámite</field><field name="code">en_tramite</field><field name="sequence">0</field></record>
+        <record id="req_etapa_vigente" model="stn.requisito.etapa"><field name="name">Vigente</field><field name="code">vigente</field><field name="sequence">1</field></record>
+        <record id="req_etapa_proximo" model="stn.requisito.etapa"><field name="name">Próximo a vencer</field><field name="code">proximo</field><field name="sequence">2</field></record>
+        <record id="req_etapa_vencido" model="stn.requisito.etapa"><field name="name">Vencido</field><field name="code">vencido</field><field name="sequence">3</field></record>
+        <record id="req_etapa_sin_vencimiento" model="stn.requisito.etapa"><field name="name">Sin vencimiento</field><field name="code">sin_vencimiento</field><field name="sequence">4</field><field name="fold">True</field></record>
+
+        <!-- Canal de Discuss donde LICIA publica su reporte diario (sustituye el WhatsApp) -->
+        <record id="channel_licia" model="discuss.channel">
+            <field name="name">Licitaciones · LICIA</field>
+            <field name="description">Reporte diario de LICIA y avisos de licitaciones.</field>
+        </record>
+
+        <!-- Equipo -->
+        <record id="team_licitaciones" model="crm.team">
+            <field name="name">Licitaciones</field>
+            <field name="stn_es_licitacion" eval="True"/>
+            <field name="use_leads" eval="False"/>
+            <field name="use_opportunities" eval="True"/>
+            <field name="sequence">1</field>
+            <field name="alias_name">licitaciones</field>
+        </record>
+
+        <!-- Etapas acordadas con Perlop (Contexto y glosario v2). Perdido no es etapa: es el botón de cierre con motivo. -->
+        <record id="stage_nueva" model="crm.stage">
+            <field name="name">Nuevas</field><field name="sequence">0</field><field name="stn_codigo">nueva</field>
+            <field name="team_ids" eval="[(6, 0, [ref('team_licitaciones')])]"/>
+        </record>
+        <record id="stage_analisis" model="crm.stage">
+            <field name="name">Análisis y decisión</field><field name="sequence">1</field><field name="stn_codigo">analisis</field>
+            <field name="team_ids" eval="[(6, 0, [ref('team_licitaciones')])]"/>
+        </record>
+        <record id="stage_preparacion" model="crm.stage">
+            <field name="name">Preparación técnica, legal y económica</field><field name="sequence">2</field><field name="stn_codigo">preparacion</field>
+            <field name="team_ids" eval="[(6, 0, [ref('team_licitaciones')])]"/>
+        </record>
+        <record id="stage_revision_ia" model="crm.stage">
+            <field name="name">Revisión IA</field><field name="sequence">3</field><field name="stn_codigo">revision_ia</field>
+            <field name="team_ids" eval="[(6, 0, [ref('team_licitaciones')])]"/>
+        </record>
+        <record id="stage_revision" model="crm.stage">
+            <field name="name">Revisión</field><field name="sequence">4</field><field name="stn_codigo">revision</field>
+            <field name="team_ids" eval="[(6, 0, [ref('team_licitaciones')])]"/>
+        </record>
+        <record id="stage_presentada" model="crm.stage">
+            <field name="name">Presentada en ComprasMX</field><field name="sequence">5</field><field name="stn_codigo">presentada</field>
+            <field name="team_ids" eval="[(6, 0, [ref('team_licitaciones')])]"/>
+        </record>
+        <record id="stage_evaluacion" model="crm.stage">
+            <field name="name">En evaluación</field><field name="sequence">6</field><field name="stn_codigo">evaluacion</field>
+            <field name="team_ids" eval="[(6, 0, [ref('team_licitaciones')])]"/>
+        </record>
+        <record id="stage_ganado" model="crm.stage">
+            <field name="name">Ganado</field><field name="sequence">7</field><field name="stn_codigo">ganado</field>
+            <field name="is_won" eval="True"/>
+            <field name="team_ids" eval="[(6, 0, [ref('team_licitaciones')])]"/>
+        </record>
+
+        <!-- Motivos de pérdida (Contexto y glosario v2) -->
+        <record id="lost_no_participamos" model="crm.lost.reason"><field name="name">No participamos</field></record>
+        <record id="lost_legal" model="crm.lost.reason"><field name="name">Desechada legal</field></record>
+        <record id="lost_tecnico" model="crm.lost.reason"><field name="name">Desechada técnica</field></record>
+        <record id="lost_precio" model="crm.lost.reason"><field name="name">Precio</field></record>
+        <record id="lost_desierta" model="crm.lost.reason"><field name="name">Desierta</field></record>
+        <record id="lost_cancelada" model="crm.lost.reason"><field name="name">Cancelada</field></record>
+        <record id="lost_fuera_plazo" model="crm.lost.reason"><field name="name">Fuera de plazo</field></record>
+
+        <!-- Parámetros por defecto -->
+        <record id="param_team" model="ir.config_parameter"><field name="key">stn_licitaciones.team_id</field><field name="value" eval="str(ref('team_licitaciones'))"/></record>
+        <record id="param_nivel_analisis" model="ir.config_parameter"><field name="key">stn_licitaciones.nivel_analisis</field><field name="value">4</field></record>
+        <record id="param_nivel_minimo" model="ir.config_parameter"><field name="key">stn_licitaciones.nivel_minimo</field><field name="value">4</field></record>
+        <record id="param_horas" model="ir.config_parameter"><field name="key">stn_licitaciones.horas_limite_interna</field><field name="value">72</field></record>
+        <record id="param_tz" model="ir.config_parameter"><field name="key">stn_licitaciones.tz</field><field name="value">America/Mexico_City</field></record>
+        <record id="param_palabras" model="ir.config_parameter"><field name="key">stn_licitaciones.palabras_clave</field><field name="value">víveres,viveres,abarrotes,alimentos,alimentación,servicio de comedor,agua purificada,perecederos</field></record>
+        <record id="param_dias_aviso" model="ir.config_parameter"><field name="key">stn_licitaciones.dias_aviso</field><field name="value">2</field></record>
+        <record id="param_claude_modo" model="ir.config_parameter"><field name="key">stn_licitaciones.claude_modo</field><field name="value">recepcion</field></record>
+        <record id="param_claude_agente" model="ir.config_parameter"><field name="key">stn_licitaciones.claude_agente</field><field name="value">LICIA</field></record>
+    </data>
+</odoo>

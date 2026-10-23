@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_stn_licia_log_list" model="ir.ui.view">
+        <field name="name">stn.licia.log.list</field>
+        <field name="model">stn.licia.log</field>
+        <field name="arch" type="xml">
+            <list create="0" decoration-danger="estado == 'error'">
+                <field name="fecha"/>
+                <field name="origen"/>
+                <field name="estado"/>
+                <field name="accion"/>
+                <field name="procedimiento"/>
+                <field name="lead_id"/>
+                <field name="mensaje"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_stn_licia_log_form" model="ir.ui.view">
+        <field name="name">stn.licia.log.form</field>
+        <field name="model">stn.licia.log</field>
+        <field name="arch" type="xml">
+            <form create="0" edit="0">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="fecha"/>
+                            <field name="origen"/>
+                            <field name="estado"/>
+                            <field name="accion"/>
+                        </group>
+                        <group>
+                            <field name="procedimiento"/>
+                            <field name="lead_id"/>
+                        </group>
+                    </group>
+                    <field name="mensaje"/>
+                    <field name="payload" widget="ace" options="{'mode': 'json'}"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="view_stn_licia_log_search" model="ir.ui.view">
+        <field name="name">stn.licia.log.search</field>
+        <field name="model">stn.licia.log</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="procedimiento"/>
+                <field name="lead_id"/>
+                <filter name="errores" string="Errores" domain="[('estado', '=', 'error')]"/>
+                <filter name="g_origen" string="Origen" context="{'group_by': 'origen'}"/>
+            </search>
+        </field>
+    </record>
+    <record id="action_stn_licia_log" model="ir.actions.act_window">
+        <field name="name">Bitácora LICIA</field>
+        <field name="res_model">stn.licia.log</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

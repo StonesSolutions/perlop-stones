@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="cron_stn_semaforo_requisitos" model="ir.cron">
+        <field name="name">Licitaciones: semáforo de vigencias de requisitos</field>
+        <field name="model_id" ref="model_stn_requisito"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_stn_semaforo()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="active" eval="True"/>
+    </record>
+    <record id="cron_stn_disparar_licia" model="ir.cron">
+        <field name="name">Licitaciones: disparar rutina LICIA en Claude</field>
+        <field name="model_id" ref="model_stn_licia_service"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_disparar_rutina()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="active" eval="False"/>
+    </record>
+    <record id="cron_stn_limpiar_bitacora" model="ir.cron">
+        <field name="name">Licitaciones: limpiar bitácora LICIA (90 días)</field>
+        <field name="model_id" ref="model_stn_licia_log"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_limpiar()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">weeks</field>
+        <field name="active" eval="True"/>
+    </record>
+    <record id="cron_stn_avisos_eventos" model="ir.cron">
+        <field name="name">Licitaciones: avisos previos y escalamiento de límites internos</field>
+        <field name="model_id" ref="model_stn_licitacion_evento"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_stn_avisos()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">hours</field>
+        <field name="active" eval="True"/>
+    </record>
+    <record id="cron_stn_semaforo_licitacion" model="ir.cron">
+        <field name="name">Licitaciones: semáforo de requisitos por licitación</field>
+        <field name="model_id" ref="model_stn_licitacion_requisito"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_stn_semaforo()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="active" eval="True"/>
+    </record>
+    <record id="cron_stn_pasar_evaluacion" model="ir.cron">
+        <field name="name">Licitaciones: pasar a «En evaluación» al pasar la apertura</field>
+        <field name="model_id" ref="crm.model_crm_lead"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_stn_evaluacion()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">hours</field>
+        <field name="active" eval="True"/>
+    </record>
+</odoo>

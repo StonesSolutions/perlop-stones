@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_stn_licitaciones_root" name="Licitaciones" parent="crm.crm_menu_root" sequence="2"
+              groups="group_licitaciones_user"/>
+    <menuitem id="menu_stn_licitaciones" name="Licitaciones" parent="menu_stn_licitaciones_root"
+              action="action_stn_licitaciones" sequence="1"/>
+    <menuitem id="menu_stn_licitacion_requisitos" name="Requisitos por licitación" parent="menu_stn_licitaciones_root"
+              action="action_stn_licitacion_requisito" sequence="2"/>
+    <menuitem id="menu_stn_requisitos" name="Requisitos (vigencias)" parent="menu_stn_licitaciones_root"
+              action="action_stn_requisito" sequence="3"/>
+    <menuitem id="menu_stn_licia_reportes" name="Reportes diarios de LICIA" parent="menu_stn_licitaciones_root"
+              action="action_stn_licia_reporte" sequence="4"/>
+    <menuitem id="menu_stn_licitaciones_analisis" name="Análisis de licitaciones" parent="crm.crm_menu_report"
+              action="action_stn_licitaciones_analisis" sequence="5" groups="group_licitaciones_user"/>
+
+    <menuitem id="menu_stn_config" name="Licitaciones" parent="crm.crm_menu_config" sequence="50"
+              groups="group_licitaciones_director,base.group_system"/>
+    <menuitem id="menu_stn_cfg_criterio" name="Criterios de evaluación" parent="menu_stn_config" action="action_stn_licitacion_criterio" sequence="1"/>
+    <menuitem id="menu_stn_cfg_estatus" name="Estatus del procedimiento" parent="menu_stn_config" action="action_stn_licitacion_estatus" sequence="2"/>
+    <menuitem id="menu_stn_cfg_tipo" name="Tipos de procedimiento" parent="menu_stn_config" action="action_stn_licitacion_tipo_procedimiento" sequence="3"/>
+    <menuitem id="menu_stn_cfg_servicio" name="Tipos de servicio" parent="menu_stn_config" action="action_stn_tipo_servicio" sequence="4"/>
+    <menuitem id="menu_stn_cfg_categoria" name="Categorías de requisitos" parent="menu_stn_config" action="action_stn_requisito_categoria" sequence="5"/>
+    <menuitem id="menu_stn_cfg_etapas_req" name="Etapas de requisitos" parent="menu_stn_config" action="action_stn_requisito_etapa" sequence="6"/>
+    <menuitem id="menu_stn_cfg_log" name="Bitácora LICIA" parent="menu_stn_config" action="action_stn_licia_log" sequence="20"/>
+</odoo>

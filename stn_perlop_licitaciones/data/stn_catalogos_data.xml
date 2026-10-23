@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <!-- Criterios (Studio: x_tipos_de_criterio) -->
+    <record id="criterio_puntos" model="stn.licitacion.criterio">
+        <field name="name">Puntos y porcentajes</field><field name="code">puntos</field><field name="sequence">1</field>
+        <field name="sinonimos">puntos,puntos y porcentajes 50/50</field>
+    </record>
+    <record id="criterio_binario" model="stn.licitacion.criterio">
+        <field name="name">Binario</field><field name="code">binario</field><field name="sequence">2</field>
+    </record>
+    <record id="criterio_costo_beneficio" model="stn.licitacion.criterio">
+        <field name="name">Costo beneficio</field><field name="code">costo_beneficio</field><field name="sequence">3</field>
+    </record>
+
+    <!-- Estatus del procedimiento en la plataforma (Studio: x_estatus_del_procedim, sin los de resultado) -->
+    <record id="estatus_vigente" model="stn.licitacion.estatus"><field name="name">Vigente</field><field name="code">vigente</field><field name="sequence">1</field><field name="color">10</field></record>
+    <record id="estatus_en_apertura" model="stn.licitacion.estatus"><field name="name">En apertura</field><field name="code">en_apertura</field><field name="sequence">2</field><field name="color">4</field></record>
+    <record id="estatus_suspendido" model="stn.licitacion.estatus"><field name="name">Suspendido</field><field name="code">suspendido</field><field name="sequence">3</field><field name="color">3</field></record>
+    <record id="estatus_en_evaluacion" model="stn.licitacion.estatus"><field name="name">En evaluación</field><field name="code">en_evaluacion</field><field name="sequence">4</field></record>
+    <record id="estatus_fallado" model="stn.licitacion.estatus"><field name="name">Fallado</field><field name="code">fallado</field><field name="sequence">5</field><field name="sinonimos">adjudicado,adjudicado parcial</field></record>
+    <record id="estatus_desierto" model="stn.licitacion.estatus"><field name="name">Desierto</field><field name="code">desierto</field><field name="sequence">6</field><field name="color">1</field></record>
+    <record id="estatus_cancelado" model="stn.licitacion.estatus"><field name="name">Cancelado</field><field name="code">cancelado</field><field name="sequence">7</field><field name="color">1</field></record>
+
+    <!-- Tipos de procedimiento -->
+    <record id="tipo_lp" model="stn.licitacion.tipo.procedimiento"><field name="name">Licitación pública</field><field name="code">LA</field><field name="sequence">1</field><field name="sinonimos">licitacion publica nacional,licitacion publica internacional</field></record>
+    <record id="tipo_i3" model="stn.licitacion.tipo.procedimiento"><field name="name">Invitación a cuando menos tres personas</field><field name="code">IA</field><field name="sequence">2</field></record>
+    <record id="tipo_ad" model="stn.licitacion.tipo.procedimiento"><field name="name">Adjudicación directa</field><field name="code">AA</field><field name="sequence">3</field></record>
+
+    <!-- Tipos de servicio / segmentos (Studio: x_tipos_de_servicio) -->
+    <record id="servicio_viveres" model="stn.tipo.servicio"><field name="name">Suministro de víveres</field><field name="code">viveres</field><field name="sequence">1</field><field name="sinonimos">viveres,víveres,abarrotes</field></record>
+    <record id="servicio_alimentacion" model="stn.tipo.servicio"><field name="name">Servicio de alimentación</field><field name="code">alimentacion</field><field name="sequence">2</field><field name="sinonimos">alimentos preparados,comedor,comedores</field></record>
+    <record id="servicio_agua" model="stn.tipo.servicio"><field name="name">Servicio de agua</field><field name="code">agua</field><field name="sequence">3</field><field name="sinonimos">agua purificada</field></record>
+
+    <!-- Categorías de requisitos (Studio: x_categorias_de_requis) -->
+    <record id="cat_licencia_municipal" model="stn.requisito.categoria"><field name="name">Licencia municipal</field><field name="sequence">1</field></record>
+    <record id="cat_laboratorios" model="stn.requisito.categoria"><field name="name">Laboratorios</field><field name="sequence">2</field><field name="sinonimos">analisis,estudios clinicos,microbiologicos</field></record>
+    <record id="cat_sanitario" model="stn.requisito.categoria"><field name="name">Sanitario</field><field name="sequence">3</field><field name="sinonimos">cofepris,nom-251,aviso de funcionamiento</field></record>
+    <record id="cat_legal" model="stn.requisito.categoria"><field name="name">Legal y fiscal</field><field name="sequence">4</field><field name="sinonimos">legal,opiniones de cumplimiento</field></record>
+    <record id="cat_vehiculos" model="stn.requisito.categoria"><field name="name">Vehículos</field><field name="sequence">5</field></record>
+    <record id="cat_experiencia" model="stn.requisito.categoria"><field name="name">Experiencia y contratos</field><field name="sequence">6</field></record>
+</odoo>

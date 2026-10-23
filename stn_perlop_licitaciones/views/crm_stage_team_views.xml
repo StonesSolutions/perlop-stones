@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="crm_stage_form_stn" model="ir.ui.view">
+        <field name="name">crm.stage.form.stn</field>
+        <field name="model">crm.stage</field>
+        <field name="inherit_id" ref="crm.crm_stage_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='is_won']" position="after">
+                <field name="stn_codigo"/>
+            </xpath>
+        </field>
+    </record>
+    <record id="crm_stage_tree_stn" model="ir.ui.view">
+        <field name="name">crm.stage.list.stn</field>
+        <field name="model">crm.stage</field>
+        <field name="inherit_id" ref="crm.crm_stage_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='is_won']" position="after">
+                <field name="stn_codigo" optional="show"/>
+            </xpath>
+        </field>
+    </record>
+    <record id="crm_team_form_stn" model="ir.ui.view">
+        <field name="name">crm.team.form.stn</field>
+        <field name="model">crm.team</field>
+        <field name="inherit_id" ref="crm.sales_team_form_view_in_crm"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='use_opportunities' and not(@invisible)]" position="before">
+                <field name="stn_es_licitacion"/>
+                <label for="stn_es_licitacion"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

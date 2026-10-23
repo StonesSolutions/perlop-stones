@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_stn_licia_reporte_list" model="ir.ui.view">
+        <field name="name">stn.licia.reporte.list</field>
+        <field name="model">stn.licia.reporte</field>
+        <field name="arch" type="xml">
+            <list create="0">
+                <field name="fecha"/>
+                <field name="plataformas"/>
+                <field name="revisados" sum="Total"/>
+                <field name="nuevos" sum="Total"/>
+                <field name="enviados" sum="Total"/>
+                <field name="resumen"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_stn_licia_reporte_form" model="ir.ui.view">
+        <field name="name">stn.licia.reporte.form</field>
+        <field name="model">stn.licia.reporte</field>
+        <field name="arch" type="xml">
+            <form create="0">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="fecha"/>
+                            <field name="plataformas"/>
+                        </group>
+                        <group>
+                            <field name="revisados"/>
+                            <field name="nuevos"/>
+                            <field name="enviados"/>
+                        </group>
+                    </group>
+                    <field name="resumen"/>
+                    <field name="linea_ids">
+                        <list>
+                            <field name="numero_procedimiento"/>
+                            <field name="descripcion"/>
+                            <field name="nivel"/>
+                            <field name="recomendacion"/>
+                            <field name="es_nuevo"/>
+                            <field name="lead_id"/>
+                        </list>
+                    </field>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="action_stn_licia_reporte" model="ir.actions.act_window">
+        <field name="name">Reportes diarios de LICIA</field>
+        <field name="res_model">stn.licia.reporte</field>
+        <field name="view_mode">list,form,graph</field>
+    </record>
+</odoo>
