@@ -235,6 +235,8 @@ class TestLiciaIngesta(TransactionCase):
         ICP = self.env['ir.config_parameter'].sudo()
         ICP.set_param('stn_licitaciones.claude_routine_url', 'https://api.anthropic.com/v1/claude_code/routines/trig_x/fire')
         ICP.set_param('stn_licitaciones.claude_routine_token', 'sk-test')
+        self.Lead.with_context(active_test=False).search(
+            [('stn_no_procedimiento', '=', 'LA-50-GYR-050GYR041-N-135-2026')]).unlink()
         lead = self.Lead.browse(self.Lead.stn_upsert_ficha({'numero_procedimiento': 'LA-50-GYR-050GYR041-N-135-2026',
                                                             'accion': 'ANALIZAR'})['lead_id'])
         with self.assertRaises(UserError):
@@ -322,6 +324,11 @@ class TestLiciaHttp(HttpCase):
         self.assertEqual(datos['accion'], 'creada')
         # Sin responsable configurado debe usar al administrador (antes fallaba con res.users())
         ICP.set_param('stn_licitaciones.user_id', False)
+        r = self.url_open('/stn/licitaciones/ficha', data=json.dumps({'numero_procedimiento': 'LA-25-C00-025C00001-N-70-2026',
+                                                                      'accion': 'ANALIZAR', 'monto_maximo': 1000}),
+                          headers={'Authorization': 'Bearer tok-prueba', 'Content-Type': 'application/json'})
+        self.assertEqual(r.status_code, 200, r.text)
+        self.assertEqual(r.json()['accion'], 'creada')
         r = self.url_open('/stn/licitaciones/reporte', data=json.dumps({'fecha': '2026-10-28', 'revisados': 9}),
                           headers={'Authorization': 'Bearer tok-prueba', 'Content-Type': 'application/json'})
         self.assertEqual(r.status_code, 200, r.text)

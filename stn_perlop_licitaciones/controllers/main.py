@@ -45,8 +45,10 @@ class StnLiciaController(http.Controller):
         if not user or not user.active:
             user = Users.search([('share', '=', False), ('active', '=', True),
                                  ('group_ids', 'in', request.env.ref('base.group_system').sudo().id)], limit=1)
-        env = request.env(user=user.id, context=dict(request.env.context, allowed_company_ids=user.company_id.ids))
-        return env
+        # update_env cambia también el entorno con el que Odoo guarda (flush) la transacción;
+        # con request.env(user=...) el guardado seguía sin usuario y fallaba con res.users().
+        request.update_env(user=user.id, context=dict(request.env.context, allowed_company_ids=user.company_id.ids))
+        return request.env
 
     def _json(self, data, status=200):
         return request.make_json_response(data, status=status)
