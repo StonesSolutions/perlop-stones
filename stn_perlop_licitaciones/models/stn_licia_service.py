@@ -54,6 +54,11 @@ class StnLiciaService(models.AbstractModel):
             'horas_limite_interna': float(self._icp('horas_limite_interna', 72) or 72),
             'instrucciones_adicionales': self._icp('instrucciones') or '',
             'endpoint_ficha': self._base_url() + '/stn/licitaciones/ficha',
+            'analisis_pendientes': [{
+                'numero_procedimiento': l.stn_no_procedimiento,
+                'documentos': self._base_url() + '/stn/licitaciones/documentos?numero=' + l.stn_no_procedimiento,
+            } for l in Lead.search([('stn_analisis_estado', 'in', ['solicitado', 'error']),
+                                    ('stn_no_procedimiento', '!=', False)])],
             'procedimientos_en_seguimiento': [{
                 'numero_procedimiento': l.stn_no_procedimiento,
                 'estatus': l.stn_estatus_id.name or '',
@@ -65,13 +70,16 @@ class StnLiciaService(models.AbstractModel):
         }
 
     @api.model
-    def stn_disparar_rutina(self, manual=True):
+    def stn_disparar_rutina(self, manual=True, texto=None):
+        """Dispara la tarea de Claude (activador API). Sin `texto`, manda los parámetros de la
+        búsqueda diaria; con `texto`, por ejemplo una orden ANALIZAR_PROCEDIMIENTO."""
         url = self._icp('claude_routine_url')
         token = self._icp('claude_routine_token')
         if not url or not token:
-            raise UserError(_('Configura la URL y el token de la rutina de Claude en Ajustes › CRM › LICIA.'))
-        params = self.stn_parametros()
-        texto = 'PARAMETROS_ODOO ' + json.dumps(params, ensure_ascii=False)
+            raise UserError(_('Configura la URL y el token del activador API de la tarea de Claude '
+                              'en Ajustes › CRM › Cuenta de Claude.'))
+        if texto is None:
+            texto = 'PARAMETROS_ODOO ' + json.dumps(self.stn_parametros(), ensure_ascii=False)
         headers = {
             'Authorization': 'Bearer %s' % token,
             'anthropic-beta': self._icp('claude_beta') or 'experimental-cc-routine-2026-04-01',

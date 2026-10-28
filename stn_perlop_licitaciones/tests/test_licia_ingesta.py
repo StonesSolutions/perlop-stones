@@ -229,6 +229,43 @@ class TestLiciaIngesta(TransactionCase):
         self.Lead.stn_upsert_ficha(datos)
         self.assertEqual(len(lead.stn_partida_ids), 3)
 
+    def test_04g_analizar_con_licia(self):
+        import base64
+        from unittest.mock import patch, MagicMock
+        ICP = self.env['ir.config_parameter'].sudo()
+        ICP.set_param('stn_licitaciones.claude_routine_url', 'https://api.anthropic.com/v1/claude_code/routines/trig_x/fire')
+        ICP.set_param('stn_licitaciones.claude_routine_token', 'sk-test')
+        lead = self.Lead.browse(self.Lead.stn_upsert_ficha({'numero_procedimiento': 'LA-50-GYR-050GYR041-N-135-2026',
+                                                            'accion': 'ANALIZAR'})['lead_id'])
+        with self.assertRaises(UserError):
+            lead.action_stn_analizar_licia()   # sin documentos
+        att = self.env['ir.attachment'].create({'name': 'Convocatoria.pdf', 'raw': b'%PDF-1.4 convocatoria'})
+        lead.stn_documento_ids = [(4, att.id)]
+        self.assertEqual((att.res_model, att.res_id), ('crm.lead', lead.id))
+        resp = MagicMock(status_code=201, text='{}', headers={'Content-Type': 'application/json'})
+        resp.json.return_value = {'claude_code_session_url': 'https://claude.ai/code/session_1'}
+        with patch('odoo.addons.stn_perlop_licitaciones.models.stn_licia_service.requests.post',
+                   return_value=resp) as post:
+            lead.action_stn_analizar_licia()
+        texto = post.call_args.kwargs['json']['text']
+        self.assertIn('ANALIZAR_PROCEDIMIENTO LA-50-GYR-050GYR041-N-135-2026', texto)
+        self.assertIn('/stn/licitaciones/documentos?numero=', texto)
+        self.assertEqual(lead.stn_analisis_estado, 'solicitado')
+        self.assertEqual(lead.stn_analisis_sesion, 'https://claude.ai/code/session_1')
+        params = self.env['stn.licia.service'].stn_parametros()
+        self.assertIn('LA-50-GYR-050GYR041-N-135-2026', [p['numero_procedimiento'] for p in params['analisis_pendientes']])
+        # LICIA responde con la ficha completa
+        self.Lead.stn_upsert_ficha({'numero_procedimiento': 'LA-50-GYR-050GYR041-N-135-2026', 'nivel_licia': 4,
+                                    'analisis_documentos': 'SI', 'analisis_resumen': '3 documentos leídos',
+                                    'requisitos': [{'referencia': '4.1', 'requisito': 'e.firma', 'tipo': 'Forma',
+                                                    'situacion': 'SE GENERA'}],
+                                    'adjuntos': [{'nombre': 'Anexo_Tecnico.pdf',
+                                                  'contenido_base64': base64.b64encode(b'%PDF anexo').decode()}]})
+        self.assertEqual(lead.stn_analisis_estado, 'completado')
+        self.assertEqual(lead.stn_viabilidad, '4')
+        self.assertEqual(len(lead.stn_requisito_ids), 1)
+        self.assertEqual(lead.stn_documentos_count, 2)
+
     def test_04_ganar_activa_pendientes(self):
         res = self.Lead.stn_upsert_ficha(ficha())
         lead = self.Lead.browse(res['lead_id'])
@@ -283,6 +320,29 @@ class TestLiciaHttp(HttpCase):
         datos = r.json()
         self.assertTrue(datos['ok'])
         self.assertEqual(datos['accion'], 'creada')
+        # Sin responsable configurado debe usar al administrador (antes fallaba con res.users())
+        ICP.set_param('stn_licitaciones.user_id', False)
+        r = self.url_open('/stn/licitaciones/reporte', data=json.dumps({'fecha': '2026-10-28', 'revisados': 9}),
+                          headers={'Authorization': 'Bearer tok-prueba', 'Content-Type': 'application/json'})
+        self.assertEqual(r.status_code, 200, r.text)
+        r = self.url_open('/stn/licitaciones/parametros', headers={'Authorization': 'Bearer tok-prueba'})
+        self.assertTrue(r.json()['empresa'])
+        # documentos: lista y descarga
+        lead = self.env['crm.lead'].search([('stn_no_procedimiento', '=', ficha()['numero_procedimiento'])])
+        att = self.env['ir.attachment'].create({'name': 'Convocatoria.pdf', 'raw': b'%PDF-1.4 hola'})
+        lead.stn_documento_ids = [(4, att.id)]
+        otro = self.env['ir.attachment'].create({'name': 'ajeno.pdf', 'raw': b'secreto'})
+        r = self.url_open('/stn/licitaciones/documentos?numero=%s' % lead.stn_no_procedimiento,
+                          headers={'Authorization': 'Bearer tok-prueba'})
+        self.assertEqual(r.status_code, 200, r.text)
+        docs = r.json()['documentos']
+        self.assertEqual([d['nombre'] for d in docs], ['Convocatoria.pdf'])
+        r = self.url_open('/stn/licitaciones/documento/%s' % att.id, headers={'Authorization': 'Bearer tok-prueba'})
+        self.assertEqual(r.content, b'%PDF-1.4 hola')
+        r = self.url_open('/stn/licitaciones/documento/%s' % otro.id, headers={'Authorization': 'Bearer tok-prueba'})
+        self.assertEqual(r.status_code, 404, 'No debe exponer adjuntos que no son de una licitación')
+        r = self.url_open('/stn/licitaciones/documento/%s' % att.id, headers={'Authorization': 'Bearer malo'})
+        self.assertEqual(r.status_code, 401)
         r = self.url_open('/stn/licitaciones/parametros', headers={'Authorization': 'Bearer tok-prueba'})
         self.assertEqual(r.status_code, 200)
         params = r.json()

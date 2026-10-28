@@ -136,6 +136,20 @@ class CrmLead(models.Model):
     # Archivo de requisitos (Studio)
     stn_requisitos_file = fields.Binary('Requisitos (archivo)', attachment=True)
     stn_requisitos_filename = fields.Char('Nombre del archivo de requisitos')
+    stn_documento_ids = fields.Many2many(
+        'ir.attachment', 'stn_lead_documento_rel', 'lead_id', 'attachment_id',
+        string='Documentos de la convocatoria',
+        help='Convocatoria, anexos, términos de referencia y actas. LICIA los descarga desde Odoo para analizarlos.')
+    stn_documentos_count = fields.Integer('# Documentos', compute='_compute_stn_documentos_count')
+    stn_analisis_estado = fields.Selection([
+        ('sin_solicitar', 'Sin solicitar'),
+        ('solicitado', 'Enviado a LICIA'),
+        ('completado', 'Analizado por LICIA'),
+        ('error', 'Error en el análisis'),
+    ], 'Análisis de documentos', default='sin_solicitar', tracking=True, copy=False)
+    stn_analisis_fecha = fields.Datetime('Último análisis solicitado', readonly=True, copy=False)
+    stn_analisis_sesion = fields.Char('Sesión de Claude', readonly=True, copy=False)
+    stn_analisis_mensaje = fields.Text('Mensaje del análisis', readonly=True, copy=False)
     stn_acta_fallo = fields.Binary('Acta de fallo', attachment=True)
     stn_acta_fallo_filename = fields.Char('Nombre del acta de fallo')
     stn_propuesta_economica = fields.Binary('Propuesta económica', attachment=True)
@@ -225,6 +239,45 @@ class CrmLead(models.Model):
             lead.stn_dias_reaccion = dias(lead.stn_fecha_deteccion, lead.stn_fecha_aprobacion)
             lead.stn_dias_disponibles = dias(lead.stn_fecha_aprobacion, lead.stn_fecha_limite_interna)
             lead.stn_dias_preparacion = dias(lead.stn_fecha_aprobacion, lead.stn_fecha_presentacion)
+
+    @api.depends('stn_documento_ids')
+    def _compute_stn_documentos_count(self):
+        for lead in self:
+            lead.stn_documentos_count = len(lead.stn_documento_ids)
+
+    def action_stn_analizar_licia(self):
+        """Pide a LICIA analizar los documentos subidos y completar la ficha."""
+        for lead in self:
+            if not lead.stn_no_procedimiento:
+                raise UserError(_('Captura el número de procedimiento antes de pedir el análisis.'))
+            if not lead.stn_documento_ids:
+                raise UserError(_('Sube primero la convocatoria y los anexos en la pestaña «Documentos».'))
+            base = self.env['stn.licia.service']._base_url()
+            texto = '\n'.join([
+                'ANALIZAR_PROCEDIMIENTO %s' % lead.stn_no_procedimiento,
+                'DOCUMENTOS %s/stn/licitaciones/documentos?numero=%s' % (base, lead.stn_no_procedimiento),
+                'SOLICITADO_POR %s' % self.env.user.name,
+            ])
+            res = self.env['stn.licia.service'].stn_disparar_rutina(manual=True, texto=texto)
+            sesion = res.get('claude_code_session_url') if isinstance(res, dict) else ''
+            lead.write({'stn_analisis_estado': 'solicitado', 'stn_analisis_fecha': fields.Datetime.now(),
+                        'stn_analisis_sesion': sesion or False, 'stn_analisis_mensaje': False})
+            lead.message_post(body=_('Se pidió a LICIA analizar %(n)s documento(s). %(s)s',
+                                     n=len(lead.stn_documento_ids), s=sesion or ''),
+                              message_type='comment', subtype_xmlid='mail.mt_note')
+        return {
+            'type': 'ir.actions.client', 'tag': 'display_notification',
+            'params': {'title': _('LICIA'), 'type': 'success',
+                       'message': _('Análisis solicitado. La ficha se actualizará sola en unos minutos.')},
+        }
+
+    def action_stn_marcar_analisis_pendiente(self):
+        """Sin activador API: deja la solicitud para la siguiente corrida diaria de LICIA."""
+        for lead in self:
+            if not lead.stn_documento_ids:
+                raise UserError(_('Sube primero la convocatoria y los anexos en la pestaña «Documentos».'))
+            lead.write({'stn_analisis_estado': 'solicitado', 'stn_analisis_fecha': fields.Datetime.now()})
+        return True
 
     @api.depends('stn_evento_ids.fecha_oficial', 'stn_evento_ids.aplica', 'stn_fechas_verificadas')
     def _compute_stn_proximo_evento(self):
@@ -321,6 +374,11 @@ class CrmLead(models.Model):
             self._stn_al_cambiar_etapa(etapa_anterior)
         if 'stn_resultado' in vals and vals['stn_resultado'] in ('ganada', 'parcial'):
             self.stn_pendiente_ids._stn_activar()
+        if 'stn_documento_ids' in vals:
+            # Los documentos quedan ligados a la licitación (también visibles en su chatter)
+            for lead in self:
+                lead.stn_documento_ids.filtered(lambda a: not a.res_id).sudo().write(
+                    {'res_model': 'crm.lead', 'res_id': lead.id})
         return res
 
     @api.model_create_multi
@@ -584,6 +642,12 @@ class CrmLead(models.Model):
         if 'fechas_verificadas' in d:
             put('stn_fechas_verificadas', P.fecha_hora(g('fechas_verificadas'), tz))
         put_bool('stn_requiere_rc', g('requiere_poliza_rc'))
+        if P.texto(g('analisis_error')):
+            vals['stn_analisis_estado'] = 'error'
+            vals['stn_analisis_mensaje'] = P.texto(g('analisis_error'))
+        elif P.booleano(g('analisis_documentos')):
+            vals['stn_analisis_estado'] = 'completado'
+            vals['stn_analisis_mensaje'] = P.texto(g('analisis_resumen')) or False
         for k, v in self._stn_vals_desde_numero(g('numero_procedimiento')).items():
             vals.setdefault(k, v)
         put('stn_objeto', P.texto(g('objeto')))
@@ -1034,7 +1098,9 @@ class CrmLead(models.Model):
             if existe:
                 existe.write({'datas': contenido})
             else:
-                Att.create(vals)
+                existe = Att.create(vals)
+            if existe not in self.stn_documento_ids:
+                self.write({'stn_documento_ids': [(4, existe.id)]})
             if 'requisitos' in nombre.lower() and nombre.lower().endswith('.pdf'):
                 self.write({'stn_requisitos_file': contenido, 'stn_requisitos_filename': nombre})
 

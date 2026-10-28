@@ -30,10 +30,23 @@ class StnLiciaController(http.Controller):
         recibido = recibido or request.httprequest.headers.get('X-STN-Token', '')
         if not recibido or not consteq(recibido, token):
             return None, (401, 'Token inválido.')
+        return self._stn_env(ICP), None
+
+    def _stn_env(self, ICP):
+        """Entorno con un usuario interno real: el responsable por defecto de Ajustes o,
+        si no hay, el administrador. Sin usuario, Odoo no tiene empresa ni puede publicar
+        mensajes (antes: «Expected singleton: res.users()»)."""
+        Users = request.env['res.users'].sudo().with_context(active_test=False)
         uid = int(ICP.get_param(P + 'user_id', 0) or 0)
-        user = request.env['res.users'].sudo().browse(uid).exists() if uid else None
-        env = request.env(user=user.id) if user else request.env(su=True)
-        return env, None
+        user = Users.browse(uid).exists() if uid else Users.browse()
+        if not user or not user.active:
+            admin = request.env.ref('base.user_admin', raise_if_not_found=False)
+            user = Users.browse(admin.id) if admin else Users.browse()
+        if not user or not user.active:
+            user = Users.search([('share', '=', False), ('active', '=', True),
+                                 ('group_ids', 'in', request.env.ref('base.group_system').sudo().id)], limit=1)
+        env = request.env(user=user.id, context=dict(request.env.context, allowed_company_ids=user.company_id.ids))
+        return env
 
     def _json(self, data, status=200):
         return request.make_json_response(data, status=status)
@@ -99,3 +112,51 @@ class StnLiciaController(http.Controller):
             _logger.exception('LICIA: error en reporte diario')
             env['stn.licia.log'].sudo()._stn_registrar('http', {}, error=str(e))
             return self._json({'ok': False, 'error': str(e)}, status=422)
+
+    # ------------------------------------------------------------------
+    # Documentos de la convocatoria (subidos por el equipo en Odoo)
+    # ------------------------------------------------------------------
+    def _stn_lead(self, env, numero):
+        return env['crm.lead'].sudo().with_context(active_test=False).search(
+            [('stn_no_procedimiento', '=', numero), ('team_id.stn_es_licitacion', '=', True)], limit=1)
+
+    @http.route('/stn/licitaciones/documentos', type='http', auth='none', methods=['GET'], csrf=False,
+                save_session=False)
+    def documentos(self, numero=None, **kw):
+        """Lista los documentos de una licitación para que LICIA los descargue."""
+        env, err = self._stn_auth()
+        if err:
+            return self._json({'ok': False, 'error': err[1]}, status=err[0])
+        lead = self._stn_lead(env, numero or '')
+        if not lead:
+            return self._json({'ok': False, 'error': 'No existe la licitación %s.' % numero}, status=404)
+        base = env['ir.config_parameter'].sudo().get_param('web.base.url', '').rstrip('/')
+        return self._json({
+            'ok': True,
+            'numero_procedimiento': lead.stn_no_procedimiento,
+            'nombre': lead.name,
+            'url_ficha': lead.stn_url_ficha or '',
+            'estado_analisis': lead.stn_analisis_estado,
+            'documentos': [{
+                'id': a.id, 'nombre': a.name, 'mimetype': a.mimetype, 'tamano': a.file_size,
+                'url': '%s/stn/licitaciones/documento/%s' % (base, a.id),
+            } for a in lead.stn_documento_ids.sudo()],
+        })
+
+    @http.route('/stn/licitaciones/documento/<int:attachment_id>', type='http', auth='none', methods=['GET'],
+                csrf=False, save_session=False)
+    def documento(self, attachment_id, **kw):
+        """Descarga un documento, solo si pertenece a una licitación."""
+        env, err = self._stn_auth()
+        if err:
+            return self._json({'ok': False, 'error': err[1]}, status=err[0])
+        att = env['ir.attachment'].sudo().browse(attachment_id).exists()
+        lead = env['crm.lead'].sudo().with_context(active_test=False).search(
+            [('stn_documento_ids', 'in', att.ids), ('team_id.stn_es_licitacion', '=', True)], limit=1) if att else None
+        if not att or not lead:
+            return self._json({'ok': False, 'error': 'Documento no encontrado.'}, status=404)
+        nombre = (att.name or 'documento').replace('"', '')
+        return request.make_response(att.raw or b'', headers=[
+            ('Content-Type', att.mimetype or 'application/octet-stream'),
+            ('Content-Disposition', 'attachment; filename="%s"' % nombre),
+        ])

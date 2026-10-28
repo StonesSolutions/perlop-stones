@@ -36,15 +36,15 @@ class ResConfigSettings(models.TransientModel):
 
     # ---------------- Cuenta de Claude / agente ----------------
     stn_claude_modo = fields.Selection([
-        ('recepcion', 'Solo recepción (LICIA corre con su propia tarea programada)'),
-        ('rutina_api', 'Odoo dispara la rutina de Claude por API'),
-    ], 'Modo de conexión con Claude', default='recepcion', config_parameter=P + 'claude_modo')
+        ('recepcion', 'La búsqueda diaria la programa Claude (tarea programada)'),
+        ('rutina_api', 'La búsqueda diaria la dispara Odoo (acción planificada)'),
+    ], 'Búsqueda diaria', default='recepcion', config_parameter=P + 'claude_modo')
     stn_claude_agente = fields.Char('Nombre del agente', default='LICIA', config_parameter=P + 'claude_agente')
     stn_claude_cuenta = fields.Char('Cuenta de Claude', config_parameter=P + 'claude_cuenta',
                                     help='Correo de la cuenta claude.ai dueña de la rutina (referencia).')
-    stn_claude_routine_url = fields.Char('URL de disparo de la rutina', config_parameter=P + 'claude_routine_url',
+    stn_claude_routine_url = fields.Char('URL del activador API', config_parameter=P + 'claude_routine_url',
                                          help='https://api.anthropic.com/v1/claude_code/routines/<id>/fire')
-    stn_claude_routine_token = fields.Char('Token de la rutina', config_parameter=P + 'claude_routine_token',
+    stn_claude_routine_token = fields.Char('Token del activador API', config_parameter=P + 'claude_routine_token',
                                            groups='base.group_system')
     stn_claude_beta = fields.Char('Encabezado beta', default='experimental-cc-routine-2026-04-01',
                                   config_parameter=P + 'claude_beta')

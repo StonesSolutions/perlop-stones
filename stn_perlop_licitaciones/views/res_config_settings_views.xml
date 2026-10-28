@@ -54,12 +54,12 @@
                     </setting>
                 </block>
                 <block title="Cuenta de Claude · agente" name="stn_claude_block">
-                    <setting string="Agente en Claude" help="Rutina de Claude (claude.ai/code/routines) que ejecuta LICIA. Con disparo por API, Odoo la lanza y le manda los parámetros de búsqueda.">
+                    <setting string="Agente en Claude" help="Activador API de la tarea de Claude que ejecuta LICIA. Lo usa el botón «Analizar con LICIA» de cada licitación y, si se activa, la ejecución diaria desde Odoo.">
                         <div class="content-group">
                             <div class="row mt8"><label for="stn_claude_modo" class="col-lg-4 o_light_label"/><field name="stn_claude_modo"/></div>
                             <div class="row"><label for="stn_claude_agente" class="col-lg-4 o_light_label"/><field name="stn_claude_agente"/></div>
                             <div class="row"><label for="stn_claude_cuenta" class="col-lg-4 o_light_label"/><field name="stn_claude_cuenta"/></div>
-                            <div invisible="stn_claude_modo != 'rutina_api'">
+                            <div>
                                 <div class="row"><label for="stn_claude_routine_url" class="col-lg-4 o_light_label"/><field name="stn_claude_routine_url"/></div>
                                 <div class="row" groups="base.group_system"><label for="stn_claude_routine_token" class="col-lg-4 o_light_label"/><field name="stn_claude_routine_token" password="True"/></div>
                                 <div class="row"><label for="stn_claude_beta" class="col-lg-4 o_light_label"/><field name="stn_claude_beta"/></div>
