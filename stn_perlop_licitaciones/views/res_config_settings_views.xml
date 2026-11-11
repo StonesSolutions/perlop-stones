@@ -26,6 +26,17 @@
                             <div class="row"><label for="stn_usuarios_analisis_ids" class="col-lg-4 o_light_label"/><field name="stn_usuarios_analisis_ids" widget="many2many_avatar_user"/></div>
                             <div class="row"><label for="stn_usuarios_gerencia_ids" class="col-lg-4 o_light_label"/><field name="stn_usuarios_gerencia_ids" widget="many2many_avatar_user"/></div>
                             <div class="row"><label for="stn_dias_aviso" class="col-lg-4 o_light_label"/><field name="stn_dias_aviso"/></div>
+                            <div class="row"><label for="stn_cerrar_no_presentadas" class="col-lg-4 o_light_label"/><field name="stn_cerrar_no_presentadas"/></div>
+                        </div>
+                    </setting>
+                </block>
+                <block title="Documentos de la empresa" name="stn_documentos_block">
+                    <setting string="Empresas del grupo que licitan" help="Cada empresa tiene sus documentos legales (acta, poderes, opiniones, licencias…). Odoo es la fuente única: LEXA los toma de aquí y nunca mezcla empresas.">
+                        <div class="content-group">
+                            <div class="row mt8"><field name="stn_empresa_grupo_ids" widget="many2many_tags" options="{'no_create': True}"/></div>
+                            <div class="mt8">
+                                <button name="action_stn_documentos_prueba" type="object" string="Documentos de prueba" icon="fa-flask" class="btn-link"/>
+                            </div>
                         </div>
                     </setting>
                 </block>

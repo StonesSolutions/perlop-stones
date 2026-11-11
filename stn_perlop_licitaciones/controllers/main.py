@@ -19,11 +19,13 @@ class StnLiciaController(http.Controller):
     (o el superusuario si no hay uno), nunca con el usuario público.
     """
 
-    def _stn_auth(self):
+    def _stn_auth(self, prefijo=P, agente='LICIA'):
+        """Valida el token del agente. `prefijo` permite reusar la misma lógica para otros
+        agentes (p. ej. LEXA con 'stn_lexa.'), cada uno con su propio token."""
         ICP = request.env['ir.config_parameter'].sudo()
-        token = ICP.get_param(P + 'token') or ''
-        if not token or not ICP.get_param(P + 'activo'):
-            return None, (503, 'Integración LICIA inactiva o sin token.')
+        token = ICP.get_param(prefijo + 'token') or ''
+        if not token or not ICP.get_param(prefijo + 'activo'):
+            return None, (503, 'Integración %s inactiva o sin token.' % agente)
         recibido = request.httprequest.headers.get('Authorization', '')
         if recibido.lower().startswith('bearer '):
             recibido = recibido[7:].strip()

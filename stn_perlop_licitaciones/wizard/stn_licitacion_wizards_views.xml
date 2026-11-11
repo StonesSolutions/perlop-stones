@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="stn_licitacion_aprobar_wizard_form" model="ir.ui.view">
+        <field name="name">stn.licitacion.aprobar.wizard.form</field>
+        <field name="model">stn.licitacion.aprobar.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Aprobar y preparar">
+                <p class="text-muted">La licitación pasa a «Preparación de propuesta». Elige quién la lidera: aparece en la ficha y recibe la actividad.</p>
+                <group>
+                    <field name="lead_id" invisible="1"/>
+                    <field name="lider_id" options="{'no_create': True}"/>
+                    <field name="nota" placeholder="Opcional: indicaciones para el líder"/>
+                </group>
+                <footer>
+                    <button name="action_confirmar" type="object" string="Aprobar y preparar" class="btn-primary"/>
+                    <button string="Cancelar" special="cancel" class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="stn_licitacion_publicada_wizard_form" model="ir.ui.view">
+        <field name="name">stn.licitacion.publicada.wizard.form</field>
+        <field name="model">stn.licitacion.publicada.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Salió la licitación">
+                <p class="text-muted">Se crea la licitación directo en «Análisis de participación» con los datos base de este registro. La investigación o el proyecto se quedan como están, sin ligarse a la convocatoria.</p>
+                <group>
+                    <field name="origen_id" invisible="1"/>
+                    <field name="numero" placeholder="LA-50-GYR-050GYR012-N-134-2026"/>
+                    <field name="nombre"/>
+                    <field name="fecha_apertura"/>
+                    <field name="url_ficha" widget="url"/>
+                </group>
+                <footer>
+                    <button name="action_confirmar" type="object" string="Crear licitación" class="btn-primary"/>
+                    <button string="Cancelar" special="cancel" class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="stn_requisito_prueba_wizard_form" model="ir.ui.view">
+        <field name="name">stn.requisito.prueba.wizard.form</field>
+        <field name="model">stn.requisito.prueba.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Documentos de prueba">
+                <p class="text-muted">Crea 22 documentos de prueba (PDF marcados «DOCUMENTO DE PRUEBA · SIN VALIDEZ OFICIAL») con fechas que muestran todos los colores del semáforo: acta, poderes, opiniones SAT/IMSS/INFONAVIT, licencias, fumigación, análisis, certificaciones, póliza RC… Con el módulo de Documentos quedan en las carpetas de la empresa. «Quitar» borra solo los de prueba.</p>
+                <group>
+                    <field name="empresa_id" options="{'no_create': True}"/>
+                    <field name="cantidad" string="De prueba ya cargados"/>
+                </group>
+                <footer>
+                    <button name="action_cargar" type="object" string="Cargar documentos de prueba" class="btn-primary"/>
+                    <button name="action_quitar" type="object" string="Quitar los de prueba" class="btn-secondary"
+                            confirm="Se borran los documentos de prueba de esta empresa. ¿Continuar?"/>
+                    <button string="Cerrar" special="cancel" class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

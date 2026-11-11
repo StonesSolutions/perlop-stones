@@ -4,6 +4,8 @@
               groups="group_licitaciones_user"/>
     <menuitem id="menu_stn_licitaciones" name="Licitaciones" parent="menu_stn_licitaciones_root"
               action="action_stn_licitaciones" sequence="1"/>
+    <menuitem id="menu_stn_investigaciones" name="Investigaciones de mercado y proyectos" parent="menu_stn_licitaciones_root"
+              action="action_stn_investigaciones" sequence="2"/>
     <menuitem id="menu_stn_licitacion_requisitos" name="Requisitos por licitación" parent="menu_stn_licitaciones_root"
               action="action_stn_licitacion_requisito" sequence="2"/>
     <menuitem id="menu_stn_requisitos" name="Requisitos (vigencias)" parent="menu_stn_licitaciones_root"

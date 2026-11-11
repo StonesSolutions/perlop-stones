@@ -70,11 +70,12 @@ class StnLiciaService(models.AbstractModel):
         }
 
     @api.model
-    def stn_disparar_rutina(self, manual=True, texto=None):
+    def stn_disparar_rutina(self, manual=True, texto=None, url=None, token=None, beta=None, agente='LICIA'):
         """Dispara la tarea de Claude (activador API). Sin `texto`, manda los parámetros de la
-        búsqueda diaria; con `texto`, por ejemplo una orden ANALIZAR_PROCEDIMIENTO."""
-        url = self._icp('claude_routine_url')
-        token = self._icp('claude_routine_token')
+        búsqueda diaria; con `texto`, por ejemplo una orden ANALIZAR_PROCEDIMIENTO.
+        `url`/`token`/`beta` permiten disparar la tarea de otro agente (LEXA)."""
+        url = url or self._icp('claude_routine_url')
+        token = token or self._icp('claude_routine_token')
         if not url or not token:
             raise UserError(_('Configura la URL y el token del activador API de la tarea de Claude '
                               'en Ajustes › CRM › Cuenta de Claude.'))
@@ -82,7 +83,7 @@ class StnLiciaService(models.AbstractModel):
             texto = 'PARAMETROS_ODOO ' + json.dumps(self.stn_parametros(), ensure_ascii=False)
         headers = {
             'Authorization': 'Bearer %s' % token,
-            'anthropic-beta': self._icp('claude_beta') or 'experimental-cc-routine-2026-04-01',
+            'anthropic-beta': beta or self._icp('claude_beta') or 'experimental-cc-routine-2026-04-01',
             'anthropic-version': '2023-06-01',
             'Content-Type': 'application/json',
         }
@@ -99,8 +100,9 @@ class StnLiciaService(models.AbstractModel):
             Log._stn_registrar('claude', {'url': url, 'respuesta': datos or cuerpo},
                                {'accion': 'rutina disparada',
                                 'advertencias': [datos.get('claude_code_session_url', '')] if datos else []})
-            self.env['ir.config_parameter'].sudo().set_param(ICP_PREFIX + 'claude_ultima_sesion',
-                                                             datos.get('claude_code_session_url', '') if datos else '')
+            if agente == 'LICIA':
+                self.env['ir.config_parameter'].sudo().set_param(
+                    ICP_PREFIX + 'claude_ultima_sesion', datos.get('claude_code_session_url', '') if datos else '')
             return datos or True
         except requests.RequestException as e:
             Log._stn_registrar('claude', {'url': url}, error=str(e))

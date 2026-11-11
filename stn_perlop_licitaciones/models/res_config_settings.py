@@ -18,7 +18,19 @@ class ResConfigSettings(models.TransientModel):
     stn_usuarios_nueva_ids = fields.Many2many(related='company_id.stn_usuarios_nueva_ids', readonly=False)
     stn_usuarios_analisis_ids = fields.Many2many(related='company_id.stn_usuarios_analisis_ids', readonly=False)
     stn_usuarios_gerencia_ids = fields.Many2many(related='company_id.stn_usuarios_gerencia_ids', readonly=False)
+    stn_empresa_grupo_ids = fields.Many2many(related='company_id.stn_empresa_grupo_ids', readonly=False)
+
+    def action_stn_documentos_prueba(self):
+        return {
+            'type': 'ir.actions.act_window', 'name': 'Documentos de prueba', 'res_model': 'stn.requisito.prueba.wizard',
+            'view_mode': 'form', 'target': 'new',
+        }
     stn_dias_aviso = fields.Integer('Días de aviso previo', default=2, config_parameter=P + 'dias_aviso')
+    stn_cerrar_no_presentadas = fields.Boolean(
+        'Cerrar las no aprobadas al pasar la apertura', config_parameter=P + 'cerrar_no_presentadas',
+        help='Si la apertura pasa y la licitación sigue en Nuevas o en Análisis, se cierra como perdida con '
+             'el motivo «Fuera de plazo». Si ya estaba en preparación o revisión, se pide al responsable que la '
+             'marque como presentada o la cierre.')
 
     # ---------------- Parámetros de búsqueda para LICIA ----------------
     stn_licia_activo = fields.Boolean('Integración LICIA activa', config_parameter=P + 'activo')

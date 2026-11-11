@@ -19,3 +19,7 @@ class ResCompany(models.Model):
     stn_licia_tipo_servicio_ids = fields.Many2many(
         'stn.tipo.servicio', 'stn_company_tipo_servicio_rel', 'company_id', 'tipo_id',
         string='Segmentos de interés')
+    stn_empresa_grupo_ids = fields.Many2many(
+        'res.partner', 'stn_company_empresa_grupo_rel', 'company_id', 'partner_id',
+        string='Empresas del grupo que licitan',
+        help='PERLOP, JD, JADE… Cada una tiene sus documentos legales; nunca se mezclan.')

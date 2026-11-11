@@ -2,10 +2,10 @@ from odoo import fields, models
 
 CODIGOS_ETAPA = [
     ('nueva', 'Nueva (detectada)'),
-    ('analisis', 'Análisis y decisión'),
-    ('preparacion', 'Preparación técnica, legal y económica'),
+    ('analisis', 'Análisis de participación'),
+    ('preparacion', 'Preparación de propuesta'),
     ('revision_ia', 'Revisión IA'),
-    ('revision', 'Revisión'),
+    ('revision', 'Integración final'),
     ('presentada', 'Presentada en plataforma'),
     ('evaluacion', 'En evaluación'),
     ('ganado', 'Ganado'),

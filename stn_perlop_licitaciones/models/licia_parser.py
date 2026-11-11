@@ -32,6 +32,24 @@ def es_vacio(valor):
     return False
 
 
+def clave_partida(valor):
+    """Clave comparable de partida: «Partida 01», «partida no. 1» y «1» son la misma; «G3» sigue siendo «g3»."""
+    v = norm(valor)
+    v = re.sub(r'^(partida|lote|grupo)\s*(no\.?|num\.?|numero|#)?\s*', '', v).strip()
+    if re.fullmatch(r'0*\d+', v):
+        v = str(int(v))
+    return v
+
+
+def lista_claves(valor):
+    """«1, 2 y 3» o ["1","G3"] → {'1','2','3'} / {'1','g3'}."""
+    if isinstance(valor, (list, tuple)):
+        partes = valor
+    else:
+        partes = re.split(r'\s*(?:,|;|/|\by\b)\s*', norm(valor))
+    return {clave_partida(x) for x in partes if clave_partida(x)}
+
+
 def texto(valor):
     if es_vacio(valor):
         return False
@@ -122,6 +140,18 @@ def mapear(valor, tabla, defecto=False):
             return codigo
     return defecto
 
+
+TIPO_REGISTRO = [
+    ('investigacion de mercado', 'investigacion_mercado'),
+    ('investigacion', 'investigacion_mercado'),
+    ('im', 'investigacion_mercado'),
+    ('proyecto de convocatoria', 'proyecto_convocatoria'),
+    ('pre convocatoria', 'proyecto_convocatoria'),
+    ('preconvocatoria', 'proyecto_convocatoria'),
+    ('proyecto', 'proyecto_convocatoria'),
+    ('licitacion', 'licitacion'),
+    ('procedimiento', 'licitacion'),
+]
 
 ACCION = [
     ('descart', 'descartar'),
@@ -221,7 +251,7 @@ FECHAS_EVENTO = [
     ('fecha_inicio_contrato', 'inicio_contrato'),
 ]
 
-RE_UNIDAD_COMPRADORA = re.compile(r'^\s*(\d{3}[A-Z]{3}\d{3})\b\s*(.*)$')
+RE_UNIDAD_COMPRADORA = re.compile(r'^\s*(\d{2,3}[A-Z0-9]{3,6}\d{2,}|\d{3}-\d{6,})\b\s*(.*)$')
 
 
 def separar_unidad_compradora(valor):

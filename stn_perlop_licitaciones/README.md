@@ -107,6 +107,47 @@ Este módulo concentra en código toda la configuración del CRM "Licitaciones" 
 - Nivel LICIA con etiquetas de «Nivel 0» a «Nivel 5»; la acción admite «Analizar» y «No participar por ahora».
 - El cierre esperado toma la fecha de fallo.
 
+## Cambios v1.6 (documentos legales en Odoo, 11-nov)
+
+- **Empresas del grupo que licitan** (Ajustes › CRM › Documentos de la empresa).
+- **Documento maestro con empresa** (`stn.requisito.empresa_id`). En la licitación, el documento maestro de cada requisito solo se puede elegir entre los de la empresa licitante.
+- **Categorías nuevas**, que también son las subcarpetas de Documentos: Constitución y personalidad, Certificaciones, Seguros y fianzas y Personal.
+- **Documentos de prueba**: 22 PDF marcados «SIN VALIDEZ», con fechas para todos los colores del semáforo. Se cargan y se quitan desde Ajustes.
+- **Puntos de extensión** para el módulo de Documentos (`stn_perlop_documentos`): `_stn_archivos`, `_stn_guardar_archivo` y `_stn_buscar_por_archivo`.
+
+## Cambios v1.5 (comentarios de Perlop, 11-nov)
+
+- **Etapas renombradas** (con migración):
+  - Análisis y decisión → **Análisis de participación**;
+  - Preparación técnica, legal y económica → **Preparación de propuesta**;
+  - Revisión → **Integración final**.
+- **Líder de proyecto** (`stn_lider_id`): «Aprobar y preparar» abre un asistente para elegirlo. Sin líder no se pasa a Preparación de propuesta. El líder aparece en la ficha y en la tarjeta del kanban, y recibe la actividad «Líder de proyecto: preparar la propuesta». También hay un filtro «Las que lidero».
+- **Investigaciones de mercado y proyectos de convocatoria** (`stn_tipo_registro`):
+  - se llevan en su propio tablero (Licitaciones › Investigaciones de mercado y proyectos), con estados Nueva / En seguimiento / Respondida / Salió la licitación / Descartada;
+  - **no se ligan a la convocatoria**;
+  - el botón «Salió la licitación» pide el número y crea la licitación **directo en Análisis de participación**, con los datos base copiados. Si LICIA ya la había traído, la pasa a análisis;
+  - LICIA puede mandarlas con `tipo_registro`.
+- **Avance de la propuesta por pestaña de ComprasMX**:
+  - cada requisito tiene pestaña (legal, técnica o económica), casilla (1, 2, 1.1…), avance (Falta / Incompleto / Completo / No aplica) y «Nuestros archivos»;
+  - la licitación muestra el % legal, técnico y económico en los datos principales y en el kanban;
+  - además muestra los chips requisito por requisito en el orden de las casillas (verde, amarillo o rojo).
+- Requerimientos se ordena por pestaña y casilla.
+
+## Cambios v1.4 (revisión del cliente, 30-oct)
+
+- **Avisos sin ruido**: el escalamiento «VENCIDO» se reiniciaba cada vez que LICIA reenviaba la misma fecha (bug); ahora solo se reinicia si la fecha cambia. Publicación, cierre de junta, fallo e inicio de contrato no generan límite interno. Apertura y muestras se activan al aprobar. No se escala un evento cuya fecha oficial ya pasó. Marcar hecha la actividad del límite deja el evento atendido y ya no se recrea.
+- **Anticipación** calculada cuando LICIA manda el límite interno.
+- **Detectada** guarda la primera detección.
+- **Partidas y sedes** se reemplazan con la lista que trae la ficha (se respetan las que tienen resultados del equipo y las sedes manuales); claves normalizadas («Partida 01» = «1»).
+- **Logística solo en Sedes**; la partida muestra sus sedes.
+- **Área requirente** se ignora si repite la unidad compradora.
+- Catálogo de estatus: *En aclaraciones*, *En repreguntas*.
+- **Cierre fuera de plazo**: al pasar la apertura, las que siguen en Nuevas/Análisis se cierran perdidas «Fuera de plazo»; las de Preparación/Revisión piden al responsable marcarlas presentadas o cerrarlas (Ajustes › Avisos automáticos).
+- Actividades de aviso por etapa sin duplicar.
+- **Alias de correo** limitado a seguidores del equipo Licitaciones (antes aceptaba a cualquiera).
+- Etiqueta «Preliminar · sin nivel» en kanban y formulario.
+- Migración `19.0.1.4.0/post-migrate.py`: borra los avisos VENCIDO repetidos y las actividades duplicadas, limpia límites de eventos informativos, corrige «Detectada» y área requirente, marca las sedes existentes como de LICIA y cierra el alias.
+
 ## Integración
 
 Los detalles están en `doc/CONTRATO_LICIA_v1.md`.

@@ -18,21 +18,29 @@
                 <button name="action_stn_analizar_licia" type="object" string="Analizar con LICIA" icon="fa-magic"
                         class="btn-secondary" invisible="not stn_es_licitacion or not stn_documentos_count"
                         confirm="LICIA descargará los documentos de esta licitación, los analizará y completará la ficha. ¿Continuar?"/>
-                <button name="action_stn_pasar_analisis" type="object" string="Pasar a análisis" class="btn-primary"
-                        invisible="not stn_es_licitacion or stn_stage_codigo != 'nueva'"/>
+                <field name="stn_tipo_registro" invisible="1"/>
+                <button name="action_stn_salio_licitacion" type="object" string="Salió la licitación" icon="fa-bullhorn"
+                        class="btn-primary" invisible="not stn_es_licitacion or stn_tipo_registro == 'licitacion' or stn_im_estado in ('publicada', 'descartada')"/>
+                <button name="action_stn_pasar_analisis" type="object" string="Pasar a análisis de participación" class="btn-primary"
+                        invisible="not stn_es_licitacion or stn_tipo_registro != 'licitacion' or stn_stage_codigo != 'nueva'"/>
                 <button name="action_stn_pasar_preparacion" type="object" string="Aprobar y preparar" class="btn-primary"
-                        invisible="not stn_es_licitacion or stn_stage_codigo != 'analisis'"/>
+                        invisible="not stn_es_licitacion or stn_tipo_registro != 'licitacion' or stn_stage_codigo != 'analisis'"/>
                 <button name="action_stn_pasar_revision_ia" type="object" string="Pasar a revisión IA" class="btn-primary"
-                        invisible="not stn_es_licitacion or stn_stage_codigo != 'preparacion'"/>
-                <button name="action_stn_pasar_revision" type="object" string="Pasar a revisión" class="btn-primary"
-                        invisible="not stn_es_licitacion or stn_stage_codigo != 'revision_ia'"/>
+                        invisible="not stn_es_licitacion or stn_tipo_registro != 'licitacion' or stn_stage_codigo != 'preparacion'"/>
+                <button name="action_stn_pasar_revision" type="object" string="Pasar a integración final" class="btn-primary"
+                        invisible="not stn_es_licitacion or stn_tipo_registro != 'licitacion' or stn_stage_codigo != 'revision_ia'"/>
                 <button name="action_stn_pasar_alta" type="object" string="Marcar presentada" class="btn-primary"
-                        invisible="not stn_es_licitacion or stn_stage_codigo != 'revision'"/>
+                        invisible="not stn_es_licitacion or stn_tipo_registro != 'licitacion' or stn_stage_codigo != 'revision'"/>
                 <button name="action_stn_pasar_evaluacion" type="object" string="Pasar a evaluación" class="btn-primary"
-                        invisible="not stn_es_licitacion or stn_stage_codigo != 'presentada'"/>
+                        invisible="not stn_es_licitacion or stn_tipo_registro != 'licitacion' or stn_stage_codigo != 'presentada'"/>
             </xpath>
             <xpath expr="//header/field[@name='stage_id']" position="attributes">
                 <attribute name="readonly">won_status == 'lost' or not active or (stn_es_licitacion and not stn_can_move_stage)</attribute>
+                <attribute name="invisible">stn_tipo_registro != 'licitacion'</attribute>
+            </xpath>
+            <xpath expr="//header/field[@name='stage_id']" position="after">
+                <field name="stn_im_estado" widget="statusbar" options="{'clickable': '1'}"
+                       invisible="stn_tipo_registro == 'licitacion'"/>
             </xpath>
 
             <!-- Encabezado: datos clave junto al cliente -->
@@ -42,8 +50,24 @@
             </xpath>
             <xpath expr="//field[@name='date_deadline']/.." position="after">
                 <field name="stn_viabilidad" widget="priority" invisible="not stn_es_licitacion"/>
+                <div class="text-warning small" colspan="2" invisible="not stn_es_licitacion or stn_viabilidad">
+                    Ficha preliminar: LICIA aún no asigna nivel porque no leyó la convocatoria. Sube los documentos en la pestaña Documentos y pulsa «Analizar con LICIA».
+                </div>
                 <field name="stn_estatus_id" invisible="not stn_es_licitacion" options="{'no_create_edit': True}"/>
-                <field name="stn_resultado" invisible="not stn_es_licitacion"/>
+                <field name="stn_resultado" invisible="not stn_es_licitacion or stn_tipo_registro != 'licitacion'"/>
+                <field name="stn_tipo_registro" invisible="not stn_es_licitacion or stn_tipo_registro == 'licitacion'" readonly="1"/>
+                <field name="stn_lider_id" widget="many2one_avatar_user" invisible="not stn_es_licitacion or stn_tipo_registro != 'licitacion'"
+                       readonly="not stn_can_move_stage"/>
+                <field name="stn_avance_corto" invisible="1"/>
+                <field name="stn_avance_legal" widget="progressbar" invisible="not stn_avance_corto"/>
+                <field name="stn_avance_tecnica" widget="progressbar" invisible="not stn_avance_corto"/>
+                <field name="stn_avance_economica" widget="progressbar" invisible="not stn_avance_corto"/>
+            </xpath>
+            <xpath expr="//notebook" position="before">
+                <div class="mt-2 mb-2" invisible="not stn_es_licitacion or not stn_avance_corto">
+                    <div class="small text-muted mb-1">Avance por casilla de ComprasMX (en el orden de «Mi proposición»)</div>
+                    <field name="stn_avance_html" nolabel="1" readonly="1"/>
+                </div>
             </xpath>
 
             <!-- Pestañas de licitación -->
@@ -218,13 +242,7 @@
                             <field name="numero" widget="handle"/>
                             <field name="clave"/>
                             <field name="unidad" optional="show"/>
-                            <field name="municipio" optional="hide"/>
-                            <field name="corredor" optional="show"/>
-                            <field name="domicilio" optional="hide"/>
-                            <field name="domicilio_alterno" optional="hide"/>
-                            <field name="domicilio_inconsistente" optional="show"/>
-                            <field name="vehiculos" optional="hide"/>
-                            <field name="cedis" optional="hide"/>
+                            <field name="sede_ids" widget="many2many_tags" optional="show"/>
                             <field name="minimo" sum="Total"/>
                             <field name="maximo" sum="Total"/>
                             <field name="maximo_estimado" optional="show"/>
@@ -238,7 +256,6 @@
                             <field name="ganada"/>
                             <field name="monto_ofertado" optional="hide"/>
                             <field name="monto_adjudicado" optional="show"/>
-                            <field name="partner_entrega_id" optional="hide"/>
                             <field name="renglon_count" optional="show"/>
                             <button name="action_ver_renglones" type="object" icon="fa-list" title="Renglones"/>
                         </list>
@@ -258,18 +275,25 @@
                             <field name="horario" optional="hide"/>
                             <field name="partner_entrega_id" optional="hide"/>
                             <field name="nota" optional="hide"/>
+                            <field name="origen" optional="hide"/>
                         </list>
                     </field>
                 </page>
 
                 <page string="Requerimientos" name="stn_requerimientos" invisible="not stn_es_licitacion">
                     <field name="stn_requisito_ids">
-                        <list editable="bottom" default_order="sequence asc, id desc"
+                        <list editable="bottom" default_order="orden_clave asc, sequence asc, id asc"
                               decoration-danger="desecha and situacion == 'conseguir'"
                               decoration-success="situacion == 'tenemos'">
                             <field name="sequence" widget="handle"/>
+                            <field name="pestana" optional="show"/>
+                            <field name="orden_casilla" optional="show"/>
+                            <field name="orden_clave" column_invisible="1"/>
                             <field name="referencia" optional="show"/>
                             <field name="name"/>
+                            <field name="avance" widget="badge" decoration-success="avance == 'completo'"
+                                   decoration-warning="avance == 'incompleto'" decoration-danger="avance == 'falta'"/>
+                            <field name="archivo_ids" widget="many2many_binary" optional="show"/>
                             <field name="tipo" optional="show"/>
                             <field name="situacion" optional="show"/>
                             <field name="situacion_detalle" optional="hide"/>
@@ -288,7 +312,8 @@
                             <field name="state_id" optional="hide"/>
                             <field name="tipo_servicio_id" optional="hide"/>
                             <field name="categoria_id" optional="show"/>
-                            <field name="requisito_id" optional="show"/>
+                            <field name="requisito_id" optional="show"
+                                   domain="[('empresa_id', 'in', [parent.stn_empresa_licitante_id, False])]"/>
                             <field name="responsable_id" optional="hide"/>
                             <field name="proveedor_id" optional="hide"/>
                             <field name="etapa_id" optional="show"/>
@@ -474,8 +499,15 @@
                     <field name="stn_estatus_id" widget="badge" invisible="not stn_estatus_id"/>
                     <span invisible="not stn_fecha_limite_interna"> Límite: <field name="stn_fecha_limite_interna" widget="remaining_days"/></span>
                     <field name="stn_proximo_evento" class="d-block text-warning"/>
+                    <field name="stn_tipo_registro" invisible="1"/>
+                    <field name="stn_avance_corto" class="d-block" invisible="not stn_avance_corto"/>
+                    <div invisible="not stn_lider_id" class="d-flex align-items-center">
+                        <span class="text-muted me-1">Líder:</span><field name="stn_lider_id" widget="many2one_avatar_user"/>
+                    </div>
                 </div>
-                <field name="stn_viabilidad" widget="priority" readonly="1" invisible="not stn_es_licitacion"/>
+                <field name="stn_viabilidad" widget="priority" readonly="1" invisible="not stn_es_licitacion or not stn_viabilidad"/>
+                <span class="badge text-bg-warning" invisible="not stn_es_licitacion or stn_viabilidad or stn_tipo_registro != 'licitacion'"
+                      title="LICIA no pudo leer la convocatoria: sube los documentos y pide el análisis">Preliminar · sin nivel</span>
             </xpath>
         </field>
     </record>
@@ -537,9 +569,12 @@
                 <filter name="g_stn_servicio" string="Tipo de servicio" context="{'group_by': 'stn_tipo_servicio_id'}"/>
                 <filter name="g_stn_tipo" string="Tipo de procedimiento" context="{'group_by': 'stn_tipo_procedimiento_id'}"/>
                 <filter name="g_stn_empresa" string="Empresa del grupo" context="{'group_by': 'stn_empresa_licitante_id'}"/>
+                <filter name="g_stn_lider" string="Líder de proyecto" context="{'group_by': 'stn_lider_id'}"/>
+                <filter name="g_stn_tipo_registro" string="Tipo de registro" context="{'group_by': 'stn_tipo_registro'}"/>
             </xpath>
             <xpath expr="//search" position="inside">
                 <separator/>
+                <filter name="stn_mi_liderazgo" string="Las que lidero" domain="[('stn_lider_id', '=', uid)]"/>
                 <filter name="stn_alto" string="Nivel 4-5" domain="[('stn_viabilidad', 'in', ['4', '5'])]"/>
                 <filter name="stn_semana" string="Límite interno en 7 días"
                         domain="[('stn_fecha_limite_interna', '&gt;=', context_today().strftime('%Y-%m-%d')), ('stn_fecha_limite_interna', '&lt;=', (context_today() + relativedelta(days=7)).strftime('%Y-%m-%d'))]"/>
@@ -587,8 +622,8 @@
         <field name="name">Licitaciones</field>
         <field name="res_model">crm.lead</field>
         <field name="view_mode">kanban,list,form,calendar,pivot,graph,activity</field>
-        <field name="domain">[('type', '=', 'opportunity'), ('team_id.stn_es_licitacion', '=', True)]</field>
-        <field name="context" eval="{'default_type': 'opportunity', 'default_team_id': ref('team_licitaciones'), 'stn_licitaciones': True, 'search_default_stn_pendientes': 1}"/>
+        <field name="domain">[('type', '=', 'opportunity'), ('team_id.stn_es_licitacion', '=', True), ('stn_tipo_registro', '=', 'licitacion')]</field>
+        <field name="context" eval="{'default_type': 'opportunity', 'default_team_id': ref('team_licitaciones'), 'default_stn_tipo_registro': 'licitacion', 'stn_licitaciones': True, 'search_default_stn_pendientes': 1}"/>
         <field name="search_view_id" ref="crm.view_crm_case_opportunities_filter"/>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">Aún no hay licitaciones</p>
@@ -602,11 +637,60 @@
         <field name="act_window_id" ref="action_stn_licitaciones"/>
     </record>
 
+    <!-- Investigaciones de mercado y proyectos de convocatoria: tablero aparte, no se ligan a la convocatoria -->
+    <record id="crm_lead_view_kanban_stn_im" model="ir.ui.view">
+        <field name="name">crm.lead.kanban.stn.im</field>
+        <field name="model">crm.lead</field>
+        <field name="priority">40</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="stn_im_estado" class="o_kanban_small_column" sample="1" quick_create="false">
+                <field name="stn_im_estado"/>
+                <templates>
+                    <t t-name="card">
+                        <field name="name" class="fw-bold"/>
+                        <field name="stn_tipo_registro" widget="badge" class="me-1"/>
+                        <field name="stn_no_procedimiento" class="text-muted d-block small"/>
+                        <field name="partner_id" class="d-block small"/>
+                        <field name="stn_objeto" class="d-block small text-truncate"/>
+                        <footer class="pt-1">
+                            <field name="activity_ids" widget="kanban_activity"/>
+                            <field name="user_id" widget="many2one_avatar_user" class="ms-auto"/>
+                        </footer>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+    <record id="action_stn_investigaciones" model="ir.actions.act_window">
+        <field name="name">Investigaciones de mercado y proyectos</field>
+        <field name="res_model">crm.lead</field>
+        <field name="view_mode">kanban,list,form,activity</field>
+        <field name="domain">[('type', '=', 'opportunity'), ('team_id.stn_es_licitacion', '=', True), ('stn_tipo_registro', '!=', 'licitacion')]</field>
+        <field name="context" eval="{'default_type': 'opportunity', 'default_team_id': ref('team_licitaciones'), 'default_stn_tipo_registro': 'investigacion_mercado', 'stn_licitaciones': True}"/>
+        <field name="search_view_id" ref="crm.view_crm_case_opportunities_filter"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Sin investigaciones de mercado ni proyectos de convocatoria</p>
+            <p>Se llevan aparte de las licitaciones. Cuando sale la licitación real, el botón «Salió la licitación» la crea directo en «Análisis de participación».</p>
+        </field>
+    </record>
+    <record id="action_stn_investigaciones_kanban" model="ir.actions.act_window.view">
+        <field name="sequence">1</field>
+        <field name="view_mode">kanban</field>
+        <field name="view_id" ref="crm_lead_view_kanban_stn_im"/>
+        <field name="act_window_id" ref="action_stn_investigaciones"/>
+    </record>
+    <record id="action_stn_investigaciones_list" model="ir.actions.act_window.view">
+        <field name="sequence">2</field>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="crm_lead_view_list_stn_licitaciones"/>
+        <field name="act_window_id" ref="action_stn_investigaciones"/>
+    </record>
+
     <record id="action_stn_licitaciones_analisis" model="ir.actions.act_window">
         <field name="name">Análisis de licitaciones</field>
         <field name="res_model">crm.lead</field>
         <field name="view_mode">pivot,graph,list</field>
-        <field name="domain">[('type', '=', 'opportunity'), ('team_id.stn_es_licitacion', '=', True)]</field>
+        <field name="domain">[('type', '=', 'opportunity'), ('team_id.stn_es_licitacion', '=', True), ('stn_tipo_registro', '=', 'licitacion')]</field>
         <field name="context">{'active_test': False, 'stn_licitaciones': True}</field>
     </record>
     <record id="action_stn_licitaciones_analisis_pivot" model="ir.actions.act_window.view">

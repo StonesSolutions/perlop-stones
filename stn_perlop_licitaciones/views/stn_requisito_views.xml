@@ -34,8 +34,10 @@
                         <group string="Responsables">
                             <field name="user_id" widget="many2one_avatar_user"/>
                             <field name="proveedor_id"/>
+                            <field name="empresa_id" options="{'no_create': True}"/>
                             <field name="categoria_id"/>
                             <field name="tipo_servicio_ids" widget="many2many_tags"/>
+                            <field name="es_prueba" invisible="not es_prueba"/>
                             <field name="priority" widget="boolean_favorite"/>
                             <field name="kanban_state" widget="state_selection"/>
                             <field name="company_id" groups="base.group_multi_company"/>
@@ -63,6 +65,7 @@
                   decoration-success="stage_code == 'vigente'">
                 <field name="sequence" widget="handle"/>
                 <field name="name"/>
+                <field name="empresa_id" optional="show"/>
                 <field name="categoria_id" optional="show"/>
                 <field name="user_id" widget="many2one_avatar_user" optional="show"/>
                 <field name="proveedor_id" optional="hide"/>
@@ -95,6 +98,7 @@
                             <field name="priority" widget="boolean_favorite" nolabel="1"/>
                             <field name="name" class="fw-bold"/>
                         </div>
+                        <field name="empresa_id" class="small d-block"/>
                         <field name="categoria_id" class="text-muted"/>
                         <div>Vence: <field name="fecha_vencimiento"/> · <field name="dias_restantes"/> días</div>
                         <footer>
@@ -128,6 +132,7 @@
             <search>
                 <field name="name"/>
                 <field name="categoria_id"/>
+                <field name="empresa_id"/>
                 <field name="user_id"/>
                 <filter name="proximos" string="Próximos a vencer" domain="[('stage_code', '=', 'proximo')]"/>
                 <filter name="vencidos" string="Vencidos" domain="[('stage_code', '=', 'vencido')]"/>
@@ -136,6 +141,8 @@
                 <filter name="archivados" string="Archivados" domain="[('active', '=', False)]"/>
                 <filter name="g_etapa" string="Etapa" context="{'group_by': 'stage_id'}"/>
                 <filter name="g_categoria" string="Categoría" context="{'group_by': 'categoria_id'}"/>
+                <filter name="g_empresa" string="Empresa" context="{'group_by': 'empresa_id'}"/>
+                <filter name="prueba" string="Documentos de prueba" domain="[('es_prueba', '=', True)]"/>
             </search>
         </field>
     </record>

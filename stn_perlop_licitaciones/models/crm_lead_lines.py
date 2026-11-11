@@ -1,6 +1,9 @@
+import re
 from datetime import timedelta
 
 from odoo import _, api, fields, models
+
+from .licia_parser import clave_partida, lista_claves
 
 TIPO_EVENTO = [
     ('publicacion', 'Publicación'),
@@ -24,6 +27,28 @@ TIPO_REQUISITO = [
     ('operativo', 'Operativo'),
     ('forma', 'Forma'),
 ]
+
+# Eventos que exigen que alguien haga algo antes de la fecha oficial (límite interno, aviso y escalamiento).
+# Publicación, cierre de junta, fallo e inicio de contrato son informativos: solo van al calendario.
+EVENTOS_ACCION = {'limite_preguntas', 'junta', 'visita', 'muestras', 'apertura', 'firma', 'otro'}
+# Plazos de preparación de la propuesta: se activan cuando la licitación se aprueba (etapa Preparación en adelante).
+EVENTOS_PREPARACION = {'muestras', 'apertura'}
+ETAPAS_APROBADAS = {'preparacion', 'revision_ia', 'revision', 'presentada', 'evaluacion', 'ganado'}
+
+# Pestañas de «Mi proposición» en ComprasMX (los 3 tipos de requisitos para el avance)
+PESTANA = [('legal', 'Legal-administrativa'), ('tecnica', 'Técnica'), ('economica', 'Económica')]
+PESTANA_POR_TIPO = {'legal': 'legal', 'forma': 'legal', 'tecnico': 'tecnica', 'operativo': 'tecnica',
+                    'puntos': 'tecnica', 'economico': 'economica'}
+AVANCE = [('falta', 'Falta'), ('incompleto', 'Incompleto'), ('completo', 'Completo'), ('no_aplica', 'No aplica')]
+
+
+def clave_orden_casilla(valor):
+    """«1.4» → 1004, «11» → 11000; sin casilla → al final de su pestaña."""
+    m = re.match(r'^\s*(\d+)(?:\s*[.\-]\s*(\d+))?', str(valor or ''))
+    if not m:
+        return 999999
+    return int(m.group(1)) * 1000 + int(m.group(2) or 0)
+
 
 SITUACION = [
     ('tenemos', 'Tenemos'),
@@ -58,10 +83,12 @@ class StnLicitacionEvento(models.Model):
     cae_fin_semana = fields.Boolean('Límite en fin de semana', compute='_compute_cae_fin_semana', store=True)
     origen = fields.Selection([('licia', 'LICIA'), ('manual', 'Manual')], default='manual', readonly=True)
 
-    @api.depends('fecha_oficial', 'anticipacion_horas')
+    @api.depends('fecha_oficial', 'anticipacion_horas', 'tipo')
     def _compute_limite(self):
         for ev in self:
-            if ev.fecha_oficial and ev.anticipacion_horas:
+            if ev.tipo not in EVENTOS_ACCION:
+                ev.fecha_limite_interna = False  # evento informativo: sin límite interno
+            elif ev.fecha_oficial and ev.anticipacion_horas:
                 ev.fecha_limite_interna = ev.fecha_oficial - timedelta(hours=ev.anticipacion_horas)
             elif not ev.fecha_limite_interna:
                 ev.fecha_limite_interna = ev.fecha_oficial
@@ -85,21 +112,40 @@ class StnLicitacionEvento(models.Model):
 
     def write(self, vals):
         cambio_fecha = {'fecha_oficial', 'fecha_limite_interna', 'anticipacion_horas'} & set(vals)
-        if cambio_fecha and not self.env.context.get('stn_sin_historial'):
-            for ev in self:
-                if 'fecha_oficial' in vals and ev.fecha_oficial and vals['fecha_oficial'] \
-                        and fields.Datetime.to_datetime(vals['fecha_oficial']) != ev.fecha_oficial:
+        if not cambio_fecha:
+            return super().write(vals)
+        # Solo cuenta como cambio si el valor realmente es otro: LICIA reenvía las mismas fechas cada día.
+        nuevos = {}
+        for k in cambio_fecha:
+            v = vals[k]
+            nuevos[k] = fields.Datetime.to_datetime(v) if k != 'anticipacion_horas' else float(v or 0.0)
+        cambiados = self.filtered(lambda ev: any(
+            (abs((ev[k] or 0.0) - nuevos[k]) > 0.001) if k == 'anticipacion_horas' else (ev[k] != (nuevos[k] or False))
+            for k in cambio_fecha))
+        if not self.env.context.get('stn_sin_historial') and 'fecha_oficial' in vals:
+            for ev in cambiados:
+                if ev.fecha_oficial and nuevos['fecha_oficial'] and nuevos['fecha_oficial'] != ev.fecha_oficial:
                     self.env['stn.licitacion.cambio'].create({
                         'lead_id': ev.lead_id.id, 'fecha': fields.Date.context_today(ev),
                         'campo': dict(TIPO_EVENTO).get(ev.tipo),
                         'antes': ev._stn_local(ev.fecha_oficial),
-                        'despues': ev._stn_local(fields.Datetime.to_datetime(vals['fecha_oficial'])),
+                        'despues': ev._stn_local(nuevos['fecha_oficial']),
                         'fuente': self.env.context.get('stn_fuente_cambio') or _('Captura manual')})
-            vals = dict(vals, aviso_enviado=False, escalado=False)
         res = super().write(vals)
-        if cambio_fecha:
-            self._stn_sincronizar_agenda()
+        if cambiados:
+            # Fecha nueva → el aviso y el escalamiento vuelven a correr (una vez) para esa fecha.
+            super(StnLicitacionEvento, cambiados).write({'aviso_enviado': False, 'escalado': False})
+            cambiados._stn_sincronizar_agenda()
         return res
+
+    def _stn_requiere_limite(self):
+        """¿Este evento lleva límite interno, actividad, aviso y escalamiento?"""
+        self.ensure_one()
+        if self.tipo not in EVENTOS_ACCION:
+            return False
+        if self.tipo in EVENTOS_PREPARACION and self.lead_id.stage_id.stn_codigo not in ETAPAS_APROBADAS:
+            return False
+        return True
 
     def _stn_local(self, dt):
         if not dt:
@@ -117,6 +163,9 @@ class StnLicitacionEvento(models.Model):
         Calendar = self.env['calendar.event'].sudo()
         ahora = fields.Datetime.now()
         for ev in self:
+            requiere = ev._stn_requiere_limite()
+            if not requiere and ev.activity_id:
+                ev.activity_id.with_context(stn_sin_hecho=True).unlink()  # informativo o aún sin aprobar
             if (not ev.aplica or not ev.fecha_oficial or ev.tipo == 'publicacion' or ev.hecho
                     or ev.lead_id.won_status == 'lost' or not ev.lead_id.active):
                 continue
@@ -139,6 +188,8 @@ class StnLicitacionEvento(models.Model):
                     ev.calendar_event_id = Calendar.with_context(
                         no_mail_to_attendees=True, default_res_model=False, default_res_model_id=False,
                         default_opportunity_id=False).create(vals_cal)
+            if not requiere:
+                continue
             if responsable and limite >= ahora:
                 resumen = _('Límite interno: %s', evento)
                 if ev.cae_fin_semana:
@@ -155,16 +206,22 @@ class StnLicitacionEvento(models.Model):
 
     @api.model
     def _cron_stn_avisos(self):
-        """Aviso previo al responsable y escalamiento a Gerencia (Contexto y glosario v2, §4)."""
+        """Aviso previo al responsable y escalamiento a Gerencia (Contexto y glosario v2, §4).
+
+        Cada fecha se avisa una sola vez y se escala una sola vez. Solo cuentan los eventos que
+        exigen acción (ver EVENTOS_ACCION); los de preparación, hasta que la licitación se aprueba.
+        Si la fecha oficial ya pasó, ya no se escala: el evento quedó atrás.
+        """
         ICP = self.env['ir.config_parameter'].sudo()
         dias = int(ICP.get_param('stn_licitaciones.dias_aviso', 2) or 2)
         ahora = fields.Datetime.now()
         eventos = self.search([('aplica', '=', True), ('hecho', '=', False), ('fecha_limite_interna', '!=', False),
+                               ('tipo', 'in', list(EVENTOS_ACCION)),
+                               '|', ('aviso_enviado', '=', False), ('escalado', '=', False),
                                ('lead_id.active', '=', True), ('lead_id.won_status', '!=', 'lost')])
+        silencio = self.with_context(stn_sin_historial=True)
         for ev in eventos:
-            # Actividad completada → el evento queda hecho
-            if ev.activity_id and not ev.activity_id.exists():
-                ev.with_context(stn_sin_historial=True).write({'hecho': True})
+            if not ev._stn_requiere_limite():
                 continue
             lead = ev.lead_id
             evento = dict(TIPO_EVENTO).get(ev.tipo)
@@ -174,16 +231,20 @@ class StnLicitacionEvento(models.Model):
                            ev=evento, lim=ev._stn_local(ev.fecha_limite_interna), of=ev._stn_local(ev.fecha_oficial)),
                     partner_ids=lead.user_id.partner_id.ids, message_type='comment',
                     subtype_xmlid='mail.mt_comment')
-                ev.with_context(stn_sin_historial=True).write({'aviso_enviado': True})
+                silencio.browse(ev.id).write({'aviso_enviado': True})
             if not ev.escalado and ev.fecha_limite_interna < ahora:
-                gerencia = lead.company_id.stn_usuarios_gerencia_ids
-                for user in gerencia:
-                    lead.activity_schedule(
-                        'mail.mail_activity_data_todo', date_deadline=fields.Date.context_today(ev),
-                        summary=_('VENCIDO sin atender: %s', evento), user_id=user.id,
-                        note=_('El límite interno %(lim)s pasó y la actividad del responsable (%(resp)s) sigue abierta.',
-                               lim=ev._stn_local(ev.fecha_limite_interna), resp=lead.user_id.name or '-'))
-                ev.with_context(stn_sin_historial=True).write({'escalado': True})
+                if not ev.fecha_oficial or ev.fecha_oficial >= ahora:
+                    resumen = _('VENCIDO sin atender: %s', evento)
+                    abiertas = lead.activity_ids.filtered(lambda a: a.summary == resumen)
+                    for user in lead.company_id.stn_usuarios_gerencia_ids - abiertas.user_id:
+                        lead.activity_schedule(
+                            'mail.mail_activity_data_todo', date_deadline=fields.Date.context_today(ev),
+                            summary=resumen, user_id=user.id,
+                            note=_('El límite interno %(lim)s pasó y la actividad del responsable (%(resp)s) '
+                                   'sigue abierta. Fecha oficial: %(of)s.',
+                                   lim=ev._stn_local(ev.fecha_limite_interna), resp=lead.user_id.name or '-',
+                                   of=ev._stn_local(ev.fecha_oficial)))
+                silencio.browse(ev.id).write({'escalado': True})
 
 
 class StnLicitacionCambio(models.Model):
@@ -252,6 +313,19 @@ class StnLicitacionPartida(models.Model):
     nota = fields.Char('Nota')
     renglon_ids = fields.One2many('stn.licitacion.renglon', 'partida_id', 'Renglones')
     renglon_count = fields.Integer(compute='_compute_renglon_count', string='# Renglones')
+    sede_ids = fields.Many2many('stn.licitacion.sede', string='Sedes', compute='_compute_sede_ids',
+                                help='Sedes que atienden esta partida (la logística vive en la sede).')
+
+    def _compute_sede_ids(self):
+        for p in self:
+            clave = clave_partida(p.clave or p.numero)
+            p.sede_ids = p.lead_id.stn_sede_ids.filtered(lambda s: clave in lista_claves(s.partidas))
+
+    def _stn_tiene_decision_equipo(self):
+        """Resultados que captura el equipo y que una ficha nueva no debe borrar."""
+        self.ensure_one()
+        return self.ganada in ('si', 'no') or bool(self.monto_adjudicado) or bool(self.nuestra_suma_precios) \
+            or bool(self.monto_ofertado) or bool(self.partner_entrega_id)
 
     @api.depends('suma_precios_ganador', 'nuestra_suma_precios')
     def _compute_diferencia_pct(self):
@@ -300,6 +374,7 @@ class StnLicitacionSede(models.Model):
     partner_entrega_id = fields.Many2one('res.partner', 'Dirección de entrega',
                                          help='Se liga al ganar, para órdenes de suministro.')
     nota = fields.Char('Nota')
+    origen = fields.Selection([('licia', 'LICIA'), ('manual', 'Manual')], default='manual', readonly=True)
 
 
 class StnLicitacionRenglon(models.Model):
@@ -370,6 +445,47 @@ class StnLicitacionRequisito(models.Model):
         ('na', 'Sin documento ligado')], 'Semáforo', compute='_compute_semaforo', store=True)
     semaforo_detalle = fields.Char('Detalle del semáforo', compute='_compute_semaforo', store=True)
     origen = fields.Selection([('licia', 'LICIA'), ('manual', 'Manual')], default='manual', readonly=True)
+    # Avance de la propuesta (pestaña de ComprasMX y orden de casilla)
+    pestana = fields.Selection(PESTANA, 'Pestaña', help='Pestaña de «Mi proposición» en ComprasMX donde se sube.')
+    orden_casilla = fields.Char('Casilla', help='Orden de la casilla en ComprasMX: 1, 2… o con subíndice 1.1, 1.2.')
+    orden_clave = fields.Integer('Orden', compute='_compute_orden_clave', store=True)
+    avance = fields.Selection(AVANCE, 'Avance', default='falta', required=True,
+                              help='Avance de la propuesta en este requisito (lo marca el equipo o la revisión de LEXA).')
+    archivo_ids = fields.Many2many('ir.attachment', 'stn_requisito_archivo_rel', 'requisito_id', 'attachment_id',
+                                   string='Nuestros archivos', help='Documento(s) que preparó el equipo para este requisito.')
+
+    @api.depends('orden_casilla', 'pestana')
+    def _compute_orden_clave(self):
+        """Orden de lectura: pestaña (legal, técnica, económica) y luego casilla de ComprasMX."""
+        rango = {codigo: i for i, (codigo, _n) in enumerate(PESTANA, 1)}
+        for r in self:
+            r.orden_clave = rango.get(r.pestana, 9) * 1000000 + clave_orden_casilla(r.orden_casilla)
+
+    @api.onchange('tipo')
+    def _onchange_tipo_pestana(self):
+        if self.tipo and not self.pestana:
+            self.pestana = PESTANA_POR_TIPO.get(self.tipo)
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            if not vals.get('pestana') and vals.get('tipo'):
+                vals['pestana'] = PESTANA_POR_TIPO.get(vals['tipo'])
+            if vals.get('situacion') == 'no_aplica' and 'avance' not in vals:
+                vals['avance'] = 'no_aplica'
+        recs = super().create(vals_list)
+        recs._stn_ligar_archivos()
+        return recs
+
+    def write(self, vals):
+        res = super().write(vals)
+        if 'archivo_ids' in vals:
+            self._stn_ligar_archivos()
+        return res
+
+    def _stn_ligar_archivos(self):
+        for r in self:
+            r.archivo_ids.filtered(lambda a: not a.res_id).sudo().write({'res_model': 'crm.lead', 'res_id': r.lead_id.id})
 
     @api.depends('lead_id.stn_fecha_apertura')
     def _compute_fecha_referencia(self):
@@ -512,3 +628,21 @@ class StnLicitacionSeguimiento(models.Model):
     fecha = fields.Char('Fecha')
     texto = fields.Text('Seguimiento', required=True)
     message_id = fields.Many2one('mail.message', readonly=True)
+
+
+class MailActivity(models.Model):
+    _inherit = 'mail.activity'
+
+    def _stn_marcar_eventos_hechos(self):
+        if self and not self.env.context.get('stn_sin_hecho'):
+            eventos = self.env['stn.licitacion.evento'].sudo().search([('activity_id', 'in', self.ids)])
+            eventos.with_context(stn_sin_historial=True).write({'hecho': True})
+
+    def _action_done(self, *args, **kwargs):
+        """Al marcar hecha la actividad del límite interno, el evento queda atendido y ya no se recrea."""
+        self._stn_marcar_eventos_hechos()
+        return super()._action_done(*args, **kwargs)
+
+    def unlink(self):
+        self._stn_marcar_eventos_hechos()
+        return super().unlink()

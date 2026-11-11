@@ -1,6 +1,7 @@
 import base64
 import json
 import logging
+from markupsafe import escape
 
 from lxml import etree
 
@@ -9,6 +10,7 @@ from odoo.exceptions import UserError, ValidationError
 
 from . import licia_parser as P
 from .crm_stage import SELLO_ETAPA
+from .crm_lead_lines import AVANCE, EVENTOS_ACCION, PESTANA
 
 _logger = logging.getLogger(__name__)
 
@@ -42,6 +44,23 @@ RESULTADO = [
 ]
 
 
+TIPO_REGISTRO = [
+    ('licitacion', 'Licitación'),
+    ('investigacion_mercado', 'Investigación de mercado'),
+    ('proyecto_convocatoria', 'Proyecto de convocatoria'),
+]
+
+IM_ESTADO = [
+    ('nueva', 'Nueva'),
+    ('seguimiento', 'En seguimiento'),
+    ('respondida', 'Respondida'),
+    ('publicada', 'Salió la licitación'),
+    ('descartada', 'Descartada'),
+]
+
+AVANCE_COLOR = {'completo': 'success', 'incompleto': 'warning', 'falta': 'danger', 'no_aplica': 'secondary'}
+
+
 class CrmLead(models.Model):
     _inherit = 'crm.lead'
 
@@ -51,6 +70,21 @@ class CrmLead(models.Model):
     stn_es_licitacion = fields.Boolean(related='team_id.stn_es_licitacion', string='Es licitación')
     stn_can_move_stage = fields.Boolean('Puede mover etapa', compute='_compute_stn_can_move_stage')
     stn_stage_codigo = fields.Selection(related='stage_id.stn_codigo', string='Código de etapa')
+    stn_tipo_registro = fields.Selection(TIPO_REGISTRO, 'Tipo de registro', default='licitacion', required=True,
+                                         index=True, tracking=True,
+                                         help='Las investigaciones de mercado y los proyectos de convocatoria se llevan '
+                                              'aparte y no se ligan a la convocatoria real.')
+    stn_im_estado = fields.Selection(IM_ESTADO, 'Estado (IM / proyecto)', default='nueva', tracking=True)
+    stn_lider_id = fields.Many2one('res.users', 'Líder de proyecto', tracking=True, domain=[('share', '=', False)],
+                                   help='Se elige al aprobar la licitación (paso a «Preparación de propuesta»).')
+
+    # Avance de la propuesta por pestaña de ComprasMX
+    stn_avance_legal = fields.Float('Avance legal (%)', compute='_compute_stn_avance', store=True, aggregator='avg')
+    stn_avance_tecnica = fields.Float('Avance técnico (%)', compute='_compute_stn_avance', store=True, aggregator='avg')
+    stn_avance_economica = fields.Float('Avance económico (%)', compute='_compute_stn_avance', store=True,
+                                        aggregator='avg')
+    stn_avance_corto = fields.Char('Avance', compute='_compute_stn_avance', store=True)
+    stn_avance_html = fields.Html('Avance por casilla', compute='_compute_stn_avance_html', sanitize=False)
 
     # ------------------------------------------------------------------
     # Identificación (Studio: no. procedimiento, objeto, criterio, estatus)
@@ -339,6 +373,60 @@ class CrmLead(models.Model):
         for lead in self:
             lead.stn_puntos_maximos = sum(lead.stn_punto_ids.mapped('puntos'))
 
+    @api.depends('stn_requisito_ids.avance', 'stn_requisito_ids.pestana')
+    def _compute_stn_avance(self):
+        etiquetas = {'legal': 'L', 'tecnica': 'T', 'economica': 'E'}
+        for lead in self:
+            partes = []
+            for pestana, _nombre in PESTANA:
+                reqs = lead.stn_requisito_ids.filtered(lambda r, p=pestana: r.pestana == p and r.avance != 'no_aplica')
+                pct = round(100.0 * len(reqs.filtered(lambda r: r.avance == 'completo')) / len(reqs), 1) if reqs else 0.0
+                lead['stn_avance_%s' % pestana] = pct
+                if reqs:
+                    partes.append('%s %d%%' % (etiquetas[pestana], round(pct)))
+            lead.stn_avance_corto = ' · '.join(partes) or False
+
+    def _stn_requisitos_por_pestana(self, pestana):
+        self.ensure_one()
+        return self.stn_requisito_ids.filtered(lambda r: r.pestana == pestana).sorted(
+            lambda r: (r.orden_clave, r.sequence, r.id))
+
+    @api.depends('stn_requisito_ids.avance', 'stn_requisito_ids.pestana', 'stn_requisito_ids.orden_casilla',
+                 'stn_requisito_ids.name')
+    def _compute_stn_avance_html(self):
+        """Requisito por requisito, en el orden de las casillas de ComprasMX."""
+        nombres_avance = dict(AVANCE)
+        for lead in self:
+            bloques = []
+            for pestana, nombre in PESTANA:
+                reqs = lead._stn_requisitos_por_pestana(pestana)
+                if not reqs:
+                    continue
+                cuenta = reqs.filtered(lambda r: r.avance != 'no_aplica')
+                hechos = len(cuenta.filtered(lambda r: r.avance == 'completo'))
+                pct = lead['stn_avance_%s' % pestana]
+                chips = []
+                con_casilla = any(reqs.mapped('orden_casilla'))
+                for i, r in enumerate(reqs, 1):
+                    # Con casillas de ComprasMX se usa su número; sin casilla: «s/c». Sin ninguna, el orden de la lista.
+                    etiqueta = escape(r.orden_casilla or ('s/c' if con_casilla else str(i)))
+                    titulo = escape('%s · %s' % (r.name or '', nombres_avance.get(r.avance, '')))
+                    chips.append('<span class="badge rounded-pill text-bg-%s me-1 mb-1" title="%s">%s</span>'
+                                 % (AVANCE_COLOR.get(r.avance, 'secondary'), titulo, etiqueta))
+                bloques.append(
+                    '<div class="mb-2"><div class="d-flex justify-content-between small fw-bold">'
+                    '<span>%s</span><span>%d%% · %d de %d</span></div>'
+                    '<div class="progress mb-1" style="height:6px"><div class="progress-bar bg-success" '
+                    'style="width:%d%%"></div></div><div>%s</div></div>'
+                    % (escape(nombre), round(pct), hechos, len(cuenta), round(pct), ''.join(chips)))
+            if bloques:
+                bloques.append('<div class="small text-muted">'
+                               '<span class="badge text-bg-success">Completo</span> '
+                               '<span class="badge text-bg-warning">Incompleto</span> '
+                               '<span class="badge text-bg-danger">Falta</span> '
+                               '<span class="badge text-bg-secondary">No aplica</span></div>')
+            lead.stn_avance_html = ''.join(bloques) or False
+
     # ------------------------------------------------------------------
     # Regla de Directores (antes módulo stn_crm_stage_directores)
     # ------------------------------------------------------------------
@@ -368,6 +456,16 @@ class CrmLead(models.Model):
             etapa = self.env['crm.stage'].browse(vals['stage_id'])
             if etapa.stn_codigo == 'ganado':
                 self._stn_validar_ganado()
+        if vals.get('stage_id') and not vals.get('stn_lider_id'):
+            etapa = self.env['crm.stage'].browse(vals['stage_id'])
+            if etapa.stn_codigo == 'preparacion':
+                sin_lider = self._stn_stage_restringida().filtered(
+                    lambda l: not l.stn_lider_id and l.stage_id.stn_codigo in ('nueva', 'analisis', False)
+                    and l.stn_tipo_registro == 'licitacion')
+                if sin_lider:
+                    raise UserError(_('Para pasar a «Preparación de propuesta» hay que elegir al líder de proyecto. '
+                                      'Usa el botón «Aprobar y preparar».\n\nLicitación(es): %s',
+                                      ', '.join(sin_lider.mapped('name')[:5])))
         etapa_anterior = {l.id: l.stage_id for l in self} if 'stage_id' in vals else {}
         res = super().write(vals)
         if 'stage_id' in vals:
@@ -389,7 +487,9 @@ class CrmLead(models.Model):
                     vals.setdefault(k, v)
         leads = super().create(vals_list)
         for lead in leads.filtered('stn_es_licitacion'):
-            lead._stn_notificar(lead.company_id.stn_usuarios_nueva_ids, _('Revisar nueva licitación'))
+            resumen = _('Revisar nueva licitación') if lead.stn_tipo_registro == 'licitacion' else \
+                _('Revisar: %s', dict(TIPO_REGISTRO)[lead.stn_tipo_registro].lower())
+            lead._stn_notificar(lead.company_id.stn_usuarios_nueva_ids, resumen)
             lead._stn_aplicar_viabilidad()
             if lead.stage_id.stn_codigo in SELLO_ETAPA:
                 lead._stn_al_cambiar_etapa({lead.id: self.env['crm.stage']})
@@ -442,10 +542,13 @@ class CrmLead(models.Model):
                 lead._stn_notificar(lead.company_id.stn_usuarios_analisis_ids, _('Revisar y analizar licitación'))
             if codigo == 'ganado':
                 lead._stn_al_ganar()
+            # Los plazos de preparación (apertura, muestras) se activan al aprobar y se retiran si se regresa
+            lead.stn_evento_ids._stn_sincronizar_agenda()
 
     def _stn_notificar(self, usuarios, resumen):
         self.ensure_one()
-        for user in usuarios:
+        ya_tienen = self.activity_ids.filtered(lambda a: a.summary == resumen).user_id
+        for user in usuarios - ya_tienen:
             self.activity_schedule('mail.mail_activity_data_todo', summary=resumen, user_id=user.id,
                                    date_deadline=fields.Date.context_today(self))
 
@@ -453,7 +556,7 @@ class CrmLead(models.Model):
         """Antes: automatización Studio 'Viabilidad de IA para mover licitación a análisis'."""
         minimo = int(self.env['ir.config_parameter'].sudo().get_param('stn_licitaciones.nivel_analisis', 4) or 4)
         for lead in self:
-            if (lead.stn_es_licitacion and lead.stage_id.stn_codigo == 'nueva'
+            if (lead.stn_es_licitacion and lead.stn_tipo_registro == 'licitacion' and lead.stage_id.stn_codigo == 'nueva'
                     and lead.stn_viabilidad and int(lead.stn_viabilidad) >= minimo):
                 lead._stn_mover('analisis')
 
@@ -461,7 +564,28 @@ class CrmLead(models.Model):
         return self._stn_mover('analisis')
 
     def action_stn_pasar_preparacion(self):
-        return self._stn_mover('preparacion')
+        """Aprobar la licitación: se elige al líder de proyecto y pasa a «Preparación de propuesta»."""
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Aprobar y preparar'),
+            'res_model': 'stn.licitacion.aprobar.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {'default_lead_id': self.id, 'default_lider_id': self.stn_lider_id.id or False},
+        }
+
+    def action_stn_salio_licitacion(self):
+        """IM o proyecto de convocatoria: salió la licitación real → se crea directo en análisis."""
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Salió la licitación'),
+            'res_model': 'stn.licitacion.publicada.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {'default_origen_id': self.id},
+        }
 
     def action_stn_pasar_revision_ia(self):
         return self._stn_mover('revision_ia')
@@ -518,11 +642,27 @@ class CrmLead(models.Model):
 
     @api.model
     def _cron_stn_evaluacion(self):
-        """Presentada → En evaluación cuando ya pasó la apertura."""
+        """Al pasar la apertura: Presentada → En evaluación; las no aprobadas se cierran «Fuera de plazo»;
+        las que estaban en preparación/revisión piden al responsable marcarlas presentadas o cerrarlas."""
         ahora = fields.Datetime.now()
-        for lead in self.search([('stage_id.stn_codigo', '=', 'presentada'), ('stn_fecha_apertura', '<', ahora),
-                                 ('active', '=', True)]):
+        base = [('stn_fecha_apertura', '<', ahora), ('active', '=', True), ('team_id.stn_es_licitacion', '=', True),
+                ('stn_tipo_registro', '=', 'licitacion')]
+        for lead in self.search(base + [('stage_id.stn_codigo', '=', 'presentada')]):
             lead._stn_mover('evaluacion')
+        if not self.env['ir.config_parameter'].sudo().get_param('stn_licitaciones.cerrar_no_presentadas'):
+            return
+        motivo = self.env.ref('stn_perlop_licitaciones.lost_fuera_plazo', raise_if_not_found=False)
+        for lead in self.search(base + [('stage_id.stn_codigo', 'in', ('nueva', 'analisis'))]):
+            apertura = fields.Datetime.context_timestamp(lead.with_context(tz=lead._stn_tz()), lead.stn_fecha_apertura)
+            lead.message_post(body=_('La apertura (%s) pasó sin que la licitación se aprobara: se cierra como '
+                                     'perdida, «Fuera de plazo».', apertura.strftime('%Y-%m-%d %H:%M')),
+                              message_type='comment', subtype_xmlid='mail.mt_note')
+            lead.with_context(stn_skip_stage_check=True).action_set_lost(
+                lost_reason_id=motivo.id if motivo else False)
+        for lead in self.search(base + [('stage_id.stn_codigo', 'in', ('preparacion', 'revision_ia', 'revision'))]):
+            if lead.user_id:
+                lead._stn_notificar(lead.user_id, _('La apertura ya pasó: marca la licitación como presentada '
+                                                    'o ciérrala con su motivo'))
 
     def _stn_check_director(self, accion):
         if self._stn_stage_restringida() and not self._stn_user_can_move_stage():
@@ -560,12 +700,16 @@ class CrmLead(models.Model):
         vals = Lead._stn_vals_encabezado(payload, advertencias, nuevo=not lead)
         if lead:
             accion = 'actualizada'
+            if not lead.stn_fecha_deteccion:
+                vals['stn_fecha_deteccion'] = P.fecha_hora(payload.get('fecha_deteccion'), self._stn_tz()) \
+                    or lead.create_date
             lead.write(vals)
         else:
             accion = 'creada'
             ICP = self.env['ir.config_parameter'].sudo()
             team = self.env['crm.team'].browse(int(ICP.get_param('stn_licitaciones.team_id', 0) or 0)).exists() \
                 or self.env['crm.team'].search([('stn_es_licitacion', '=', True)], limit=1)
+            vals.setdefault('stn_fecha_deteccion', fields.Datetime.now())
             vals.update({
                 'type': 'opportunity',
                 'team_id': team.id,
@@ -585,7 +729,7 @@ class CrmLead(models.Model):
                               lead._stn_vals_cambio)
         lead._stn_sync_simple('stn_pregunta_ids', payload.get('preguntas'), ('numero',), lead._stn_vals_pregunta)
         lead._stn_sync_partidas(payload.get('partidas'), advertencias)
-        lead._stn_sync_sedes(payload.get('sedes'))
+        lead._stn_sync_sedes(lead._stn_sedes_desde_partidas(payload.get('partidas'), payload.get('sedes')))
         lead._stn_sync_requisitos(payload.get('requisitos'), advertencias)
         lead._stn_sync_simple('stn_punto_ids', payload.get('puntos'), ('rubro',), lead._stn_vals_punto)
         lead._stn_sync_simple('stn_antecedente_ids', payload.get('antecedentes'), ('procedimiento',),
@@ -625,6 +769,9 @@ class CrmLead(models.Model):
             if b is not None:
                 vals[campo] = b
 
+        tipo_registro = P.mapear(g('tipo_registro'), P.TIPO_REGISTRO)
+        if tipo_registro and nuevo:
+            vals['stn_tipo_registro'] = tipo_registro  # solo al crear: una licitación nunca se vuelve IM
         nivel = P.entero(g('nivel_licia'))
         if nivel is not None:
             vals['stn_viabilidad'] = str(max(0, min(5, nivel)))
@@ -653,7 +800,10 @@ class CrmLead(models.Model):
         put('stn_objeto', P.texto(g('objeto')))
         put('stn_cucop', P.texto(g('cucop')))
         put('stn_caracter', P.mapear(g('caracter'), P.CARACTER))
-        put('stn_area_requirente', P.texto(g('area_requirente')))
+        area = P.texto(g('area_requirente'))
+        if area and P.norm(area) not in {P.norm(g('unidad_compradora')), P.norm(g('convocante')),
+                                         P.norm(P.separar_unidad_compradora(g('unidad_compradora'))[1])}:
+            put('stn_area_requirente', area)  # si LICIA repite la unidad compradora, no es área requirente
         put_bool('stn_operamos_estado', g('operamos_en_estado'))
         put_bool('stn_conjunta_permitida', g('conjunta_permitida'))
         put_bool('stn_cliente_nuevo', g('cliente_nuevo'))
@@ -713,6 +863,8 @@ class CrmLead(models.Model):
                              ('fecha_inicio_contrato', 'stn_fecha_inicio_contrato')]:
             if clave in d:
                 valor = P.fecha_hora(g(clave), tz)
+                if campo == 'stn_fecha_deteccion' and (not valor or not nuevo):
+                    continue  # «Detectada» es la primera detección: no se reescribe en cada corrida
                 vals[campo] = valor or False
         # Cierre esperado = fecha de fallo (si no hay, el límite interno)
         if vals.get('stn_fecha_fallo'):
@@ -861,7 +1013,12 @@ class CrmLead(models.Model):
                 'nota': P.texto(fila.get('nota')),
                 'origen': 'licia',
             }
-            if limite:
+            if tipo not in EVENTOS_ACCION:
+                pass  # informativo (publicación, cierre de junta, fallo, inicio de contrato): sin límite
+            elif limite and oficial:
+                vals['fecha_limite_interna'] = limite
+                vals['anticipacion_horas'] = round((oficial - limite).total_seconds() / 3600.0, 2)
+            elif limite:
                 vals['fecha_limite_interna'] = limite
             elif tipo == 'apertura' and oficial:
                 vals['anticipacion_horas'] = horas_default
@@ -876,7 +1033,10 @@ class CrmLead(models.Model):
         if not filas or not isinstance(filas, list):
             return
         Partida = self.env['stn.licitacion.partida']
+        recibidas = set()
         for f in filas:
+            if not isinstance(f, dict):
+                continue
             clave = P.texto(f.get('clave') or f.get('partida')) or (
                 P.texto(f.get('numero')) if not isinstance(f.get('numero'), (int, float)) else False)
             num = P.entero(f.get('numero')) if isinstance(f.get('numero'), (int, float)) else P.entero(clave)
@@ -908,7 +1068,9 @@ class CrmLead(models.Model):
             }
             participamos = P.mapear(f.get('participamos'), P.PARTICIPAMOS)
             ganada = P.mapear(f.get('ganada'), P.GANADA)
-            actual = self.stn_partida_ids.filtered(lambda p: (p.clave or str(p.numero)) == clave)[:1]
+            llave = P.clave_partida(clave)
+            recibidas.add(llave)
+            actual = self.stn_partida_ids.filtered(lambda p: P.clave_partida(p.clave or p.numero) == llave)[:1]
             # Las decisiones del equipo no se pisan: solo se llenan si siguen "por decidir"/"N/A"
             if participamos and (not actual or actual.participamos == 'por_decidir'):
                 vals['participamos'] = participamos
@@ -941,16 +1103,55 @@ class CrmLead(models.Model):
                     else:
                         rvals['partida_id'] = actual.id
                         self.env['stn.licitacion.renglon'].create(rvals)
+        # La ficha trae la lista completa: lo que ya no viene se elimina (si el equipo no capturó resultados)
+        for vieja in self.stn_partida_ids.filtered(lambda p: P.clave_partida(p.clave or p.numero) not in recibidas):
+            if vieja._stn_tiene_decision_equipo():
+                advertencias.append(_('La partida %s ya no viene en la ficha; se conservó porque tiene datos '
+                                      'capturados por el equipo.', vieja.clave or vieja.numero))
+            else:
+                vieja.unlink()
+
+    @api.model
+    def _stn_sedes_desde_partidas(self, partidas, sedes):
+        """Logística que LICIA manda dentro de la partida → sede (la logística vive solo en Sedes)."""
+        sedes = [f for f in (sedes or []) if isinstance(f, dict)] if isinstance(sedes, list) else []
+        cubiertas = set()
+        for f in sedes:
+            cubiertas |= P.lista_claves(f.get('partidas'))
+        for f in partidas if isinstance(partidas, list) else []:
+            if not isinstance(f, dict):
+                continue
+            clave = P.texto(f.get('clave') or f.get('partida')) or P.texto(f.get('numero'))
+            datos = {k: f.get(k) for k in ('municipio', 'domicilio', 'domicilio_alterno', 'domicilio_inconsistente',
+                                           'corredor', 'vehiculos', 'cedis', 'horario') if P.texto(f.get(k))}
+            if not clave or not datos or P.clave_partida(clave) in cubiertas:
+                continue
+            unidad = P.texto(f.get('unidad')) or _('Partida %s', clave)
+            existente = next((x for x in sedes if P.norm(x.get('unidad')) == P.norm(unidad)), None)
+            if existente:
+                existente['partidas'] = ', '.join(sorted(P.lista_claves(existente.get('partidas')) |
+                                                         {P.clave_partida(clave)}))
+                for k, v in datos.items():
+                    existente.setdefault(k, v)
+            else:
+                sedes.append(dict(datos, unidad=unidad, partidas=clave))
+        return sedes
 
     def _stn_sync_sedes(self, filas):
-        """Sedes y logística: una línea por unidad (puede atender varias partidas)."""
+        """Sedes y logística: una línea por unidad (puede atender varias partidas).
+
+        La ficha trae la lista completa: las sedes de LICIA que ya no vienen se eliminan
+        (las capturadas a mano se respetan).
+        """
         if not filas or not isinstance(filas, list):
             return
         Sede = self.env['stn.licitacion.sede']
+        recibidas = set()
         for f in filas:
             unidad = P.texto(f.get('unidad'))
             if not unidad:
                 continue
+            recibidas.add(P.norm(unidad))
             partidas = f.get('partidas')
             if isinstance(partidas, list):
                 partidas = ', '.join(map(str, partidas))
@@ -966,6 +1167,7 @@ class CrmLead(models.Model):
                 'cedis': P.texto(f.get('cedis')),
                 'horario': P.texto(f.get('horario')),
                 'nota': P.texto(f.get('nota')),
+                'origen': 'licia',
             }
             actual = self.stn_sede_ids.filtered(lambda s: P.norm(s.unidad) == P.norm(unidad))[:1]
             if actual:
@@ -973,6 +1175,8 @@ class CrmLead(models.Model):
             else:
                 vals['lead_id'] = self.id
                 Sede.create(vals)
+        self.stn_sede_ids.filtered(
+            lambda s: s.origen == 'licia' and P.norm(s.unidad) not in recibidas and not s.partner_entrega_id).unlink()
 
     def _stn_sync_requisitos(self, filas, advertencias):
         if not filas or not isinstance(filas, list):

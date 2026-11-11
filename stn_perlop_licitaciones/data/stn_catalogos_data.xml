@@ -14,6 +14,8 @@
 
     <!-- Estatus del procedimiento en la plataforma (Studio: x_estatus_del_procedim, sin los de resultado) -->
     <record id="estatus_vigente" model="stn.licitacion.estatus"><field name="name">Vigente</field><field name="code">vigente</field><field name="sequence">1</field><field name="color">10</field></record>
+    <record id="estatus_en_aclaraciones" model="stn.licitacion.estatus"><field name="name">En aclaraciones</field><field name="code">en_aclaraciones</field><field name="sequence">1</field><field name="color">10</field><field name="sinonimos">junta de aclaraciones,en junta de aclaraciones,aclaraciones</field></record>
+    <record id="estatus_en_repreguntas" model="stn.licitacion.estatus"><field name="name">En repreguntas</field><field name="code">en_repreguntas</field><field name="sequence">1</field><field name="color">10</field><field name="sinonimos">repreguntas</field></record>
     <record id="estatus_en_apertura" model="stn.licitacion.estatus"><field name="name">En apertura</field><field name="code">en_apertura</field><field name="sequence">2</field><field name="color">4</field></record>
     <record id="estatus_suspendido" model="stn.licitacion.estatus"><field name="name">Suspendido</field><field name="code">suspendido</field><field name="sequence">3</field><field name="color">3</field></record>
     <record id="estatus_en_evaluacion" model="stn.licitacion.estatus"><field name="name">En evaluación</field><field name="code">en_evaluacion</field><field name="sequence">4</field></record>
@@ -38,4 +40,9 @@
     <record id="cat_legal" model="stn.requisito.categoria"><field name="name">Legal y fiscal</field><field name="sequence">4</field><field name="sinonimos">legal,opiniones de cumplimiento</field></record>
     <record id="cat_vehiculos" model="stn.requisito.categoria"><field name="name">Vehículos</field><field name="sequence">5</field></record>
     <record id="cat_experiencia" model="stn.requisito.categoria"><field name="name">Experiencia y contratos</field><field name="sequence">6</field></record>
+    <!-- v1.6: cada categoría es una subcarpeta en Documentos (Licitaciones · Documentos de la empresa / Empresa / Categoría) -->
+    <record id="cat_constitucion" model="stn.requisito.categoria"><field name="name">Constitución y personalidad</field><field name="sequence">0</field><field name="sinonimos">acta constitutiva,poder,poderes,representante legal,identificacion</field></record>
+    <record id="cat_certificaciones" model="stn.requisito.categoria"><field name="name">Certificaciones</field><field name="sequence">7</field><field name="sinonimos">iso,nmx,igualdad laboral,distintivo h</field></record>
+    <record id="cat_seguros" model="stn.requisito.categoria"><field name="name">Seguros y fianzas</field><field name="sequence">8</field><field name="sinonimos">poliza,responsabilidad civil,fianza</field></record>
+    <record id="cat_personal" model="stn.requisito.categoria"><field name="name">Personal</field><field name="sequence">9</field><field name="sinonimos">dc-3,capacitacion,imss altas</field></record>
 </odoo>

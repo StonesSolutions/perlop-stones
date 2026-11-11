@@ -28,7 +28,16 @@ PASO 2 · BÚSQUEDA
 - Quédate con los que correspondan a los segmentos de PERLOP.
 - Revisa además cada procedimiento de procedimientos_en_seguimiento aunque ya no aparezca en anuncios vigentes (estatus, fechas, actas nuevas).
 - Si no puedes acceder a ComprasMX, detente en este punto. Reporta el error exacto (URL, código HTTP, mensaje) y manda el reporte del paso 5 con revisados=0 y el error en el resumen.
-- Si la ficha pública del procedimiento se lee pero la descarga de la convocatoria y los anexos pide un reto anti-bot o un captcha, NO intentes eludirlo. Sigue con una FICHA PRELIMINAR (paso 3-bis).
+- Si la ficha pública del procedimiento se lee pero la descarga de la convocatoria y los anexos pide un reto anti-bot o un captcha, NO intentes eludirlo. Usa la sesión de PERLOP (PASO 2-BIS) y, si no la hay, sigue con una FICHA PRELIMINAR (paso 3-bis).
+
+PASO 2-BIS · DESCARGA CON LA CUENTA DE PERLOP EN COMPRASMX
+Haz este paso solo si existen las variables de entorno COMPRASMX_USUARIO y COMPRASMX_PASSWORD.
+- Inicia sesión una vez en el acceso oficial de ComprasMX con esas credenciales, usando un navegador (Playwright). Escribe la contraseña solo en el campo de contraseña del formulario oficial; nunca la imprimas, ni la guardes en archivos, ni la mandes a Odoo, ni la pongas en el resumen.
+- Si el inicio de sesión pide captcha, segundo factor, e.firma o confirmación por correo, NO lo intentes eludir. Reporta «login de ComprasMX requiere verificación» y sigue con fichas preliminares.
+- Con la sesión iniciada, en cada candidato descarga solo la convocatoria, los anexos, los términos de referencia y las actas publicadas. NO cambies nada de la cuenta, NO te registres ni manifiestes interés en procedimientos, NO envíes preguntas ni proposiciones.
+- Haz el análisis completo del PASO 3 con los documentos descargados.
+- Al enviar la ficha (PASO 4), agrega "analisis_documentos": "SI" y "analisis_resumen", e incluye los documentos en "adjuntos": [{"nombre": "...", "mimetype": "application/pdf", "contenido_base64": "..."}]. Así quedan guardados en la pestaña Documentos de Odoo. Si los adjuntos de una ficha suman más de 20 MB, mándala sin los más pesados y lístalos en documentos.archivos.
+- Al terminar, cierra la sesión de ComprasMX.
 
 PASO 3 · ANÁLISIS DE CADA CANDIDATO
 Con la convocatoria, los anexos y los términos de referencia:
@@ -52,16 +61,29 @@ Si no pudiste descargar los documentos, NO asignes nivel_licia (omite la clave) 
 Pon accion = "ANALIZAR" y lectura = "Ficha preliminar: no se pudieron descargar la convocatoria y los anexos (reto anti-bot). Falta el análisis de requisitos y de viabilidad." Agrega en seguimiento[] la línea del día.
 Envía la ficha preliminar de todo candidato del giro de PERLOP, aunque no tenga nivel. El equipo completará el análisis en Odoo.
 
+REGLAS DE LLENADO (revisión del 30-oct, obligatorias)
+1. Claves estables: partidas[].clave es el número o clave de la partida exactamente como lo publica la convocatoria ("1", "2", "G3"). No la renombres entre días ni la cambies de unidad: la partida 1 es la que la convocatoria llama PARTIDA 1.
+2. partidas[] y sedes[] son SIEMPRE la lista completa. Odoo elimina lo que ya no venga. Si no tienes la lista completa (ficha preliminar sin anexos), omite esas claves; no mandes una lista parcial.
+3. La logística (domicilio, municipio, corredor, vehículos, CEDIS, horario) va en sedes[], con las partidas que atiende cada sede. No la repitas en partidas[].
+4. estatus_procedimiento es el estatus que muestra hoy ComprasMX, tal cual (VIGENTE, EN ACLARACIONES, EN REPREGUNTAS, EN APERTURA, SUSPENDIDO, EN EVALUACIÓN, FALLADO, DESIERTO, CANCELADO). Si cambió, mándalo aquí y además en historial[].
+5. area_requirente es el área que pide el servicio según la convocatoria. Si no la identificas, "N/A". Nunca copies la unidad compradora.
+6. Montos: monto_minimo y monto_maximo son el dato oficial publicado. Si la convocatoria publica máximos por partida, monto_maximo es su suma y cada partida lleva maximo_estimado "NO". Los campos monto_*_estimado son solo para hipótesis propias (p. ej. con precios del ganador anterior), explicadas en nota_montos.
+7. fecha_deteccion es la fecha en que detectaste el procedimiento por primera vez. Si ya viene en procedimientos_en_seguimiento, no la mandes.
+8. Eventos: manda fecha_limite_interna solo para límite de preguntas, junta, visita, muestras, apertura y firma. Publicación, cierre de junta, fallo e inicio de contrato van sin límite interno.
+9. Nivel: la ficha preliminar va sin nivel (Odoo la marca «Preliminar · sin nivel»). En cuanto leas los documentos, manda nivel_licia y razon_nivel.
+10. Investigaciones de mercado y proyectos de convocatoria: mándalos con "tipo_registro":"INVESTIGACION DE MERCADO" o "PROYECTO DE CONVOCATORIA" y su propio número. No los ligues con ninguna convocatoria. Cuando salga la licitación real, mándala como una licitación más, con su número de procedimiento.
+
 PASO 4 · ENVÍO DE FICHAS A ODOO
 Por cada procedimiento con nivel >= nivel_minimo_para_enviar, o que esté en seguimiento, o que tenga ficha preliminar (paso 3-bis), guarda el JSON en un archivo y envíalo:
 curl -s -X POST "$ODOO_URL/stn/licitaciones/ficha" -H "Content-Type: application/json" --data-binary @ficha.json
 Formato: fechas "AAAA-MM-DD HH:MM" en hora de la Ciudad de México; montos sin IVA, sin signos ni comas; SI/NO; "N/A" cuando no exista.
 Estructura (todas las claves son opcionales salvo numero_procedimiento):
 {
- "version":"1.2","corte":"AAAA-MM-DD HH:MM","fechas_verificadas":"AAAA-MM-DD HH:MM",
+ "version":"1.4","corte":"AAAA-MM-DD HH:MM","fechas_verificadas":"AAAA-MM-DD HH:MM",
+ "tipo_registro":"LICITACION",
  "numero_procedimiento":"LA-50-GYR-050GYR012-N-134-2026","nombre_oportunidad":"<número> · <objeto corto> · <dependencia> <plaza>",
  "nivel_licia":4,"accion":"PERSEGUIR (con condición)","razon_nivel":"…","lectura":"…",
- "estatus_procedimiento":"VIGENTE|EN APERTURA|SUSPENDIDO|EN EVALUACIÓN|FALLADO|DESIERTO|CANCELADO",
+ "estatus_procedimiento":"VIGENTE|EN ACLARACIONES|EN REPREGUNTAS|EN APERTURA|SUSPENDIDO|EN EVALUACIÓN|FALLADO|DESIERTO|CANCELADO",
  "plataforma":"ComprasMX","folio_plataforma":"2026-A-L-NAC-…","url_ficha":"https://…",
  "tipo_procedimiento":"Licitación pública electrónica","caracter":"Nacional","criterio":"Binario|Puntos y porcentajes","minimo_tecnico":37.5,
  "dependencia":"IMSS","convocante":"IMSS - OOAD Regional Colima","unidad_compradora":"050GYR012 Coordinación de Abastecimiento y Equipamiento",
@@ -75,7 +97,7 @@ Estructura (todas las claves son opcionales salvo numero_procedimiento):
  "historial":[{"fecha":"AAAA-MM-DD","campo":"Estatus","antes":"VIGENTE","despues":"SUSPENDIDO","fuente":"…"}],
  "junta":{"aplica":"SI","aclaraciones":"…","acta":"…"},
  "preguntas":[{"numero":1,"pregunta":"…","numeral":"…","estado":"SUGERIDA","respuesta":"N/A"}],
- "partidas":[{"clave":"G3","unidad":"…","minimo":0,"maximo":0,"maximo_estimado":"SI","maximo_anterior":0,"ganador_anterior":"…","suma_precios_ganador":0,"nuestra_suma_precios":0,"participamos":"POR DECIDIR","ganada":"N/A"}],
+ "partidas":[{"clave":"G3","unidad":"…","minimo":0,"maximo":0,"maximo_estimado":"NO","maximo_anterior":0,"ganador_anterior":"…","suma_precios_ganador":0,"nuestra_suma_precios":0,"participamos":"POR DECIDIR","ganada":"N/A"}],
  "sedes":[{"unidad":"HGZ 1","partidas":["G3","G4"],"municipio":"…","domicilio":"…","domicilio_alterno":"…","domicilio_inconsistente":"NO","corredor":"…","vehiculos":"…","cedis":"…","horario":"…"}],
  "requisitos":[{"referencia":"3.1.1 I","requisito":"…","extracto_literal":"…","tipo":"Legal","situacion":"TENEMOS","nota":"…","efecto":"DESECHA","vigencia_maxima":"3 meses","categoria":"Legal y fiscal"}],
  "puntos":[{"rubro":"…","puntos":14,"entregable":"…","situacion":"VERIFICAR"}],

@@ -1,6 +1,6 @@
 {
     'name': 'PERLOP · CRM Licitaciones + LICIA',
-    'version': '19.0.1.3.1',
+    'version': '19.0.1.6.0',
     'summary': 'CRM de licitaciones públicas para PERLOP con ingesta automática de fichas del agente LICIA (Claude).',
     'description': """
 Módulo que concentra toda la configuración del CRM "Licitaciones" de PERLOP
@@ -37,6 +37,7 @@ de licitación que genera el agente LICIA.
         'views/stn_licia_log_views.xml',
         'views/stn_licia_reporte_views.xml',
         'views/res_config_settings_views.xml',
+        'wizard/stn_licitacion_wizards_views.xml',
         'views/menus.xml',
     ],
     'post_init_hook': 'post_init_hook',

@@ -22,6 +22,7 @@
             <field name="use_opportunities" eval="True"/>
             <field name="sequence">1</field>
             <field name="alias_name">licitaciones</field>
+            <field name="alias_contact">followers</field>
         </record>
 
         <!-- Etapas acordadas con Perlop (Contexto y glosario v2). Perdido no es etapa: es el botón de cierre con motivo. -->
@@ -30,11 +31,11 @@
             <field name="team_ids" eval="[(6, 0, [ref('team_licitaciones')])]"/>
         </record>
         <record id="stage_analisis" model="crm.stage">
-            <field name="name">Análisis y decisión</field><field name="sequence">1</field><field name="stn_codigo">analisis</field>
+            <field name="name">Análisis de participación</field><field name="sequence">1</field><field name="stn_codigo">analisis</field>
             <field name="team_ids" eval="[(6, 0, [ref('team_licitaciones')])]"/>
         </record>
         <record id="stage_preparacion" model="crm.stage">
-            <field name="name">Preparación técnica, legal y económica</field><field name="sequence">2</field><field name="stn_codigo">preparacion</field>
+            <field name="name">Preparación de propuesta</field><field name="sequence">2</field><field name="stn_codigo">preparacion</field>
             <field name="team_ids" eval="[(6, 0, [ref('team_licitaciones')])]"/>
         </record>
         <record id="stage_revision_ia" model="crm.stage">
@@ -42,7 +43,7 @@
             <field name="team_ids" eval="[(6, 0, [ref('team_licitaciones')])]"/>
         </record>
         <record id="stage_revision" model="crm.stage">
-            <field name="name">Revisión</field><field name="sequence">4</field><field name="stn_codigo">revision</field>
+            <field name="name">Integración final</field><field name="sequence">4</field><field name="stn_codigo">revision</field>
             <field name="team_ids" eval="[(6, 0, [ref('team_licitaciones')])]"/>
         </record>
         <record id="stage_presentada" model="crm.stage">
@@ -76,6 +77,7 @@
         <record id="param_tz" model="ir.config_parameter"><field name="key">stn_licitaciones.tz</field><field name="value">America/Mexico_City</field></record>
         <record id="param_palabras" model="ir.config_parameter"><field name="key">stn_licitaciones.palabras_clave</field><field name="value">víveres,viveres,abarrotes,alimentos,alimentación,servicio de comedor,agua purificada,perecederos</field></record>
         <record id="param_dias_aviso" model="ir.config_parameter"><field name="key">stn_licitaciones.dias_aviso</field><field name="value">2</field></record>
+        <record id="param_cerrar_no_presentadas" model="ir.config_parameter"><field name="key">stn_licitaciones.cerrar_no_presentadas</field><field name="value">True</field></record>
         <record id="param_claude_modo" model="ir.config_parameter"><field name="key">stn_licitaciones.claude_modo</field><field name="value">recepcion</field></record>
         <record id="param_claude_agente" model="ir.config_parameter"><field name="key">stn_licitaciones.claude_agente</field><field name="value">LICIA</field></record>
     </data>

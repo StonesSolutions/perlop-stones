@@ -1,4 +1,4 @@
-# Contrato de integración LICIA → Odoo · v1.2
+# Contrato de integración LICIA → Odoo · v1.4
 
 Este contrato define cómo LICIA manda cada ficha de licitación a Odoo para que quede **capturada en sus campos**, no solo adjunta. Hay un ejemplo completo, tomado de la ficha real IA-50-GYR-050GYR018-N-210-2026, en `ficha_ejemplo_v1.json`.
 
@@ -95,9 +95,15 @@ Los textos de catálogo (estatus, criterio, tipo de procedimiento, tipo de servi
 | `documentos.carpeta` | `stn_carpeta` | |
 | `version`, `corte` | `stn_licia_version`, `stn_licia_corte` | |
 
+### Investigaciones de mercado y proyectos de convocatoria (v1.4)
+
+`tipo_registro`: `LICITACION` (por defecto) | `INVESTIGACION DE MERCADO` | `PROYECTO DE CONVOCATORIA`. Las IM y los proyectos se crean en su propio tablero y no entran al flujo de licitaciones. LICIA **no** las liga con la convocatoria real. Cuando sale la licitación, LICIA la manda como una licitación más, con su propio número. Si el equipo ya la creó con el botón «Salió la licitación», la ficha la actualiza sin regresarla a Nuevas. `tipo_registro` solo se toma al crear: una licitación nunca se vuelve IM.
+
 ## 4. Tablas
 
 Cada fila se identifica con una **llave natural**. Si la llave ya existe, la fila se actualiza; si no, se agrega. Lo que el equipo captura a mano no se borra.
+
+**v1.3 · `partidas[]` y `sedes[]` son la lista completa.** Si una ficha trae partidas, Odoo elimina las que ya no vienen, salvo las que tienen resultados capturados por el equipo (ganada, monto ofertado/adjudicado, nuestra suma de precios, dirección de entrega): esas se conservan con una advertencia. Igual con las sedes que mandó LICIA (las capturadas a mano se respetan). Si LICIA no tiene la lista completa, omite la clave. La llave de partida se compara sin el prefijo «Partida/Lote/Grupo» ni ceros a la izquierda («Partida 01» = «1»).
 
 | Lista JSON | Tabla Odoo | Llave | Claves de cada fila |
 |---|---|---|---|
@@ -126,7 +132,11 @@ Del texto de `vigencia_maxima` («3 meses», «30 días», «menos de 6 meses»)
 
 Si no viene `tipo_procedimiento` o `caracter`, Odoo los lee del número de procedimiento (LA/IA/AA y N). La clave de la UC también sale del número.
 
-Cuando la partida es una unidad médica (como en Tamaulipas), los datos de domicilio pueden ir en la misma partida. Cuando es un grupo de productos que se entrega en varias unidades (como en Colima), las unidades van en `sedes[]`.
+La logística vive solo en **Sedes** (v1.3). Si LICIA aún manda domicilio, corredor, vehículos o CEDIS dentro de una partida, Odoo crea o completa la sede correspondiente y la liga a esa partida; en la tabla de partidas solo se ve la columna *Sedes*.
+
+**Eventos (v1.3):** solo límite de preguntas, junta, visita, muestras, apertura, firma y «otro» llevan límite interno, actividad, aviso y escalamiento. Publicación, cierre de junta, fallo e inicio de contrato son informativos (solo calendario). Apertura y muestras se activan cuando la licitación se aprueba (etapa Preparación). Cada fecha se avisa una vez y se escala una vez; si LICIA reenvía la misma fecha no se repite; si la fecha oficial ya pasó, no se escala. Si LICIA manda el límite interno, Odoo calcula la anticipación en horas.
+
+**Encabezado (v1.3):** `fecha_deteccion` solo se guarda la primera vez. `area_requirente` se ignora si repite la unidad compradora o el convocante. Estatus nuevos en el catálogo: *En aclaraciones* y *En repreguntas*.
 
 La diferencia «nosotros contra el ganador» la calcula Odoo con las dos sumas de precios.
 

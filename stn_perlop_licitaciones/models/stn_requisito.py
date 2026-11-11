@@ -46,6 +46,10 @@ class StnRequisito(models.Model):
         ('normal', 'En progreso'), ('done', 'Listo'), ('blocked', 'Bloqueado')],
         'Estado de kanban', default='normal')
     attachment_ids = fields.Many2many('ir.attachment', string='Documento vigente')
+    empresa_id = fields.Many2one('res.partner', 'Empresa del grupo', index=True, tracking=True,
+                                 help='Empresa dueña del documento (PERLOP, JD, JADE). LEXA solo usa los documentos '
+                                      'de la empresa que licita.')
+    es_prueba = fields.Boolean('Documento de prueba', readonly=True, copy=False)
     linea_ids = fields.One2many('stn.licitacion.requisito', 'requisito_id', 'Usado en licitaciones')
     linea_count = fields.Integer(compute='_compute_linea_count')
 
@@ -67,6 +71,27 @@ class StnRequisito(models.Model):
             rec.fecha_recomendada_renovacion = (
                 rec.fecha_vencimiento - relativedelta(days=rec.dias_tramite or 0)
                 if rec.fecha_vencimiento else False)
+
+    # ------------------------------------------------------------------
+    # Archivo del documento (con el módulo de Documentos vive en una carpeta)
+    # ------------------------------------------------------------------
+    def _stn_archivos(self):
+        """Archivo(s) vigentes del documento maestro. `stn_perlop_documentos` lo toma de Documentos."""
+        return self.attachment_ids
+
+    @api.model
+    def _stn_buscar_por_archivo(self, attachment):
+        return self.with_context(active_test=False).search([('attachment_ids', 'in', attachment.ids)])
+
+    def _stn_guardar_archivo(self, nombre, datos, mimetype='application/pdf'):
+        self.ensure_one()
+        att = self.env['ir.attachment'].create({'name': nombre, 'raw': datos, 'mimetype': mimetype,
+                                                'res_model': self._name, 'res_id': self.id})
+        self.attachment_ids = [(4, att.id)]
+        return att
+
+    def _stn_quitar_archivos_prueba(self):
+        self.mapped('attachment_ids').unlink()
 
     def _compute_linea_count(self):
         for rec in self:
