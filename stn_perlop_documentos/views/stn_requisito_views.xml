@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_stn_requisito_form_documentos" model="ir.ui.view">
+        <field name="name">stn.requisito.form.documentos</field>
+        <field name="model">stn.requisito</field>
+        <field name="inherit_id" ref="stn_perlop_licitaciones.view_stn_requisito_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='documento']" position="replace">
+                <page string="Documento" name="documento">
+                    <div class="text-muted mb-2">El archivo vive en Documentos, en la carpeta de la empresa y categoría (fuente única). Súbelo ahí y queda ligado aquí; para renovar, sube la nueva versión en Documentos.</div>
+                    <group>
+                        <field name="documento_id" options="{'no_create': True}"/>
+                    </group>
+                    <button name="action_stn_abrir_documento" type="object" string="Abrir en Documentos" icon="fa-folder-open"
+                            class="btn-link" invisible="not documento_id"/>
+                    <button name="action_stn_abrir_carpeta" type="object" string="Ir a la carpeta" icon="fa-folder"
+                            class="btn-link" invisible="not empresa_id"/>
+                    <separator string="Archivos anteriores (adjuntos)" invisible="not attachment_ids"/>
+                    <field name="attachment_ids" widget="many2many_binary" invisible="not attachment_ids"/>
+                </page>
+            </xpath>
+        </field>
+    </record>
+    <record id="view_stn_requisito_list_documentos" model="ir.ui.view">
+        <field name="name">stn.requisito.list.documentos</field>
+        <field name="model">stn.requisito</field>
+        <field name="inherit_id" ref="stn_perlop_licitaciones.view_stn_requisito_list"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='categoria_id']" position="after">
+                <field name="documento_id" optional="show"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

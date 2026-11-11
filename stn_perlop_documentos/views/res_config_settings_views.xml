@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_stn_documentos" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.stn.documentos</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="stn_perlop_licitaciones.res_config_settings_view_form_stn_licitaciones"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='action_stn_documentos_prueba']" position="before">
+                <button name="action_stn_crear_carpetas" type="object" string="Crear carpetas en Documentos" icon="fa-folder"
+                        class="btn-link"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
