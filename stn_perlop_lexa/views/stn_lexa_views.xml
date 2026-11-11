@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="stn_lexa_encargo_view_list" model="ir.ui.view">
+        <field name="name">stn.lexa.encargo.list</field>
+        <field name="model">stn.lexa.encargo</field>
+        <field name="arch" type="xml">
+            <list decoration-warning="estado in ('matriz_lista', 'requiere_regenerar')" decoration-danger="estado == 'error'"
+                  decoration-success="estado in ('aprobada', 'revisado')" decoration-muted="estado == 'cancelado'">
+                <field name="name"/>
+                <field name="lead_id" optional="hide"/>
+                <field name="tipo"/>
+                <field name="parte"/>
+                <field name="version_matriz" string="Versión"/>
+                <field name="estado" widget="badge"/>
+                <field name="solicitado_por" optional="show"/>
+                <field name="fecha_solicitud" optional="show"/>
+                <field name="fecha_respuesta" optional="show"/>
+                <field name="matriz_aprobada_por" optional="show"/>
+                <field name="cumplen" optional="hide"/>
+                <field name="no_cumplen" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="stn_lexa_encargo_view_form" model="ir.ui.view">
+        <field name="name">stn.lexa.encargo.form</field>
+        <field name="model">stn.lexa.encargo</field>
+        <field name="arch" type="xml">
+            <form string="Encargo de LEXA">
+                <header>
+                    <button name="action_aprobar_matriz" type="object" string="Aprobar matriz" class="btn-primary"
+                            invisible="tipo != 'matriz' or estado not in ('matriz_lista', 'requiere_regenerar')"/>
+                    <button name="action_devolver" type="object" string="Pedir cambios"
+                            invisible="tipo != 'matriz' or estado not in ('matriz_lista', 'aprobada', 'requiere_regenerar')"/>
+                    <button name="action_cancelar" type="object" string="Cancelar encargo"
+                            invisible="estado not in ('solicitado', 'en_proceso', 'error')"/>
+                    <field name="estado" widget="statusbar" statusbar_visible="solicitado,en_proceso,matriz_lista,aprobada,revisado"/>
+                </header>
+                <sheet>
+                    <div class="oe_title"><h1><field name="name" readonly="1"/></h1></div>
+                    <group>
+                        <group>
+                            <field name="lead_id" readonly="1"/>
+                            <field name="tipo" readonly="1"/>
+                            <field name="parte" readonly="1"/>
+                            <field name="version_matriz" readonly="1"/>
+                            <field name="empresa"/>
+                        </group>
+                        <group>
+                            <field name="solicitado_por"/>
+                            <field name="fecha_solicitud"/>
+                            <field name="fecha_respuesta"/>
+                            <field name="matriz_aprobada_por"/>
+                            <field name="matriz_aprobada_fecha"/>
+                            <field name="matriz_attachment_id"/>
+                            <field name="sesion_url" widget="url" invisible="not sesion_url"/>
+                        </group>
+                    </group>
+                    <group string="Revisión" invisible="tipo != 'revision'">
+                        <field name="revisados"/>
+                        <field name="cumplen"/>
+                        <field name="no_cumplen"/>
+                        <field name="parciales"/>
+                    </group>
+                    <notebook>
+                        <page string="Resumen" name="resumen">
+                            <field name="nota" readonly="estado not in ('solicitado',)" placeholder="Indicaciones para LEXA"/>
+                            <separator string="Resumen de LEXA"/>
+                            <field name="resumen"/>
+                            <separator string="Advertencias"/>
+                            <field name="advertencias"/>
+                        </page>
+                        <page string="Último JSON" name="json" groups="base.group_system">
+                            <field name="payload" widget="ace" options="{'mode': 'json'}"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="stn_lexa_encargo_view_search" model="ir.ui.view">
+        <field name="name">stn.lexa.encargo.search</field>
+        <field name="model">stn.lexa.encargo</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="lead_id"/>
+                <filter name="por_aprobar" string="Matrices por aprobar" domain="[('estado', '=', 'matriz_lista')]"/>
+                <filter name="pendientes" string="Pendientes en LEXA" domain="[('estado', 'in', ['solicitado', 'en_proceso'])]"/>
+                <filter name="regenerar" string="Requieren regenerar" domain="[('estado', '=', 'requiere_regenerar')]"/>
+                <filter name="g_estado" string="Estado" context="{'group_by': 'estado'}"/>
+                <filter name="g_lead" string="Licitación" context="{'group_by': 'lead_id'}"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_stn_lexa_encargo" model="ir.actions.act_window">
+        <field name="name">Encargos de LEXA</field>
+        <field name="res_model">stn.lexa.encargo</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_por_aprobar': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Sin encargos de LEXA</p>
+            <p>Se crean con los botones «Armar matriz con LEXA» y «Revisar con LEXA» de cada licitación.</p>
+        </field>
+    </record>
+
+    <record id="stn_lexa_faltante_view_list" model="ir.ui.view">
+        <field name="name">stn.lexa.faltante.list</field>
+        <field name="model">stn.lexa.faltante</field>
+        <field name="arch" type="xml">
+            <list editable="bottom" decoration-danger="desecha and estado in ('abierto', 'en_tramite')"
+                  decoration-muted="estado in ('resuelto', 'no_aplica')">
+                <field name="lead_id"/>
+                <field name="name"/>
+                <field name="dato"/>
+                <field name="desecha"/>
+                <field name="solicitado_a_id" widget="many2one_avatar_user"/>
+                <field name="fecha_limite"/>
+                <field name="estado" widget="badge"/>
+            </list>
+        </field>
+    </record>
+    <record id="stn_lexa_faltante_view_search" model="ir.ui.view">
+        <field name="name">stn.lexa.faltante.search</field>
+        <field name="model">stn.lexa.faltante</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="lead_id"/>
+                <filter name="abiertos" string="Abiertos" domain="[('estado', 'in', ['abierto', 'en_tramite'])]"/>
+                <filter name="desechan" string="Desechan" domain="[('desecha', '=', True)]"/>
+                <filter name="mios" string="Pedidos a mí" domain="[('solicitado_a_id', '=', uid)]"/>
+            </search>
+        </field>
+    </record>
+    <record id="action_stn_lexa_faltante" model="ir.actions.act_window">
+        <field name="name">Faltantes de proposición</field>
+        <field name="res_model">stn.lexa.faltante</field>
+        <field name="view_mode">list</field>
+        <field name="context">{'search_default_abiertos': 1}</field>
+    </record>
+</odoo>

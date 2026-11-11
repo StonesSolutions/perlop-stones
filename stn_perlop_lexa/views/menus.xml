@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_stn_lexa_encargos" name="Encargos de LEXA" parent="stn_perlop_licitaciones.menu_stn_licitaciones_root"
+              action="action_stn_lexa_encargo" sequence="5"/>
+    <menuitem id="menu_stn_lexa_faltantes" name="Faltantes de proposición" parent="stn_perlop_licitaciones.menu_stn_licitaciones_root"
+              action="action_stn_lexa_faltante" sequence="6"/>
+</odoo>

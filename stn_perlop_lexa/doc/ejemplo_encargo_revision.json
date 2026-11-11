@@ -1,0 +1,42 @@
+{
+ "esquema": "lexa.encargo/1.0",
+ "encargo_id": 15,
+ "llave": {
+  "numero_procedimiento": "LA-50-GYR-050GYR012-N-134-2026",
+  "empresa": "PERLOP",
+  "parte": "tecnica",
+  "version_matriz": 2
+ },
+ "tipo": "revision",
+ "resumen": "Revisé 11 archivos contra 24 requisitos: 20 cumplen, 3 no cumplen, 1 parcial.",
+ "revision": [
+  {
+   "requisito_id": 845,
+   "dictamen": "CUMPLE",
+   "evidencia": "1.pdf, p. 2-9",
+   "observacion": "Estudios del 20-jul-2026, laboratorio acreditado."
+  },
+  {
+   "orden_casilla": "1.4",
+   "dictamen": "NO CUMPLE",
+   "observacion": "Faltan los certificados de septiembre; la causal desecha."
+  },
+  {
+   "orden_casilla": "2",
+   "dictamen": "PARCIAL",
+   "observacion": "La carta no trae la firma del representante legal."
+  }
+ ],
+ "faltantes": [
+  {
+   "documento": "Certificados de fumigación sep 2026",
+   "requisito": "1.4",
+   "dato_faltante": "certificado de septiembre",
+   "donde_se_busco": [
+    "Nuestros archivos del requisito 1.4 en Odoo",
+    "OneDrive/<empresa>/fumigación/2026-09"
+   ],
+   "desecha": true
+  }
+ ]
+}

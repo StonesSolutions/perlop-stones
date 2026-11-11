@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="param_lexa_modo" model="ir.config_parameter">
+        <field name="key">stn_lexa.modo</field>
+        <field name="value">cola</field>
+    </record>
+</odoo>

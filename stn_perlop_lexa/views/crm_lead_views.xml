@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="crm_lead_view_form_stn_lexa" model="ir.ui.view">
+        <field name="name">crm.lead.form.stn.lexa</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="stn_perlop_licitaciones.crm_lead_view_form_stn_licitaciones"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='action_stn_pasar_revision_ia']" position="before">
+                <button name="action_stn_lexa_matriz" type="object" string="Armar matriz con LEXA" icon="fa-table"
+                        class="btn-secondary"
+                        invisible="not stn_es_licitacion or stn_tipo_registro != 'licitacion' or stn_stage_codigo not in ('preparacion', 'revision_ia')"/>
+                <button name="action_stn_lexa_revisar" type="object" string="Revisar con LEXA" icon="fa-check-square-o"
+                        class="btn-primary"
+                        invisible="not stn_es_licitacion or stn_tipo_registro != 'licitacion' or stn_stage_codigo not in ('revision_ia', 'revision')"/>
+            </xpath>
+            <xpath expr="//field[@name='stn_avance_economica']" position="after">
+                <field name="stn_lexa_estado" invisible="not stn_lexa_estado"/>
+                <field name="stn_lexa_no_cumplen" invisible="not stn_lexa_no_cumplen" decoration-danger="1"/>
+                <field name="stn_lexa_faltantes_abiertos" invisible="not stn_lexa_faltantes_abiertos" decoration-warning="1"/>
+            </xpath>
+            <xpath expr="//field[@name='stn_requisito_ids']/list/field[@name='archivo_ids']" position="after">
+                <field name="lexa_dictamen" widget="badge" optional="show"
+                       decoration-success="lexa_dictamen == 'cumple'" decoration-warning="lexa_dictamen == 'parcial'"
+                       decoration-danger="lexa_dictamen == 'no_cumple'"/>
+                <field name="lexa_observacion" optional="show"/>
+                <field name="casilla_id" optional="hide" options="{'no_create': True}"/>
+                <field name="subindice" optional="hide"/>
+                <field name="lexa_semaforo" optional="hide"/>
+                <field name="explicacion" optional="hide"/>
+                <field name="pendiente" optional="hide"/>
+                <field name="anexo_formato" optional="hide"/>
+                <field name="soportes" optional="hide"/>
+                <field name="causal_literal" optional="hide"/>
+                <field name="huella" optional="hide"/>
+                <field name="clase_formato" optional="hide"/>
+                <field name="quien_lo_hace" optional="hide"/>
+                <field name="firma_requerida" optional="hide"/>
+                <field name="evidencia" optional="hide"/>
+                <field name="fundamento" optional="hide"/>
+                <field name="junta_cambio" optional="hide"/>
+                <field name="lexa_fecha" optional="hide"/>
+            </xpath>
+            <xpath expr="//page[@name='stn_requerimientos']" position="after">
+                <page string="LEXA" name="stn_lexa" invisible="not stn_es_licitacion or stn_tipo_registro != 'licitacion'">
+                    <separator string="Encargos"/>
+                    <field name="stn_lexa_encargo_ids" readonly="1">
+                        <list decoration-warning="estado in ('matriz_lista', 'requiere_regenerar')"
+                              decoration-danger="estado == 'error'" decoration-success="estado in ('aprobada', 'revisado')"
+                              decoration-muted="estado == 'cancelado'">
+                            <field name="tipo"/>
+                            <field name="parte"/>
+                            <field name="version_matriz" string="Versión"/>
+                            <field name="estado" widget="badge"/>
+                            <field name="fecha_solicitud" optional="hide"/>
+                            <field name="fecha_respuesta" optional="show"/>
+                            <field name="cumplen" optional="show"/>
+                            <field name="no_cumplen" optional="show"/>
+                            <field name="parciales" optional="hide"/>
+                            <field name="matriz_aprobada_por" optional="show"/>
+                            <field name="matriz_aprobada_fecha" optional="hide"/>
+                            <field name="matriz_attachment_id" optional="show"/>
+                            <field name="resumen" optional="hide"/>
+                            <button name="action_aprobar_matriz" type="object" string="Aprobar matriz" icon="fa-check"
+                                    class="btn-link" invisible="tipo != 'matriz' or estado not in ('matriz_lista', 'requiere_regenerar')"/>
+                            <button name="action_devolver" type="object" string="Pedir cambios" icon="fa-reply"
+                                    class="btn-link" invisible="tipo != 'matriz' or estado not in ('matriz_lista', 'aprobada', 'requiere_regenerar')"/>
+                        </list>
+                    </field>
+                    <separator string="Casillas de «Mi proposición» en ComprasMX"/>
+                    <field name="stn_lexa_casilla_ids">
+                        <list editable="bottom" default_order="pestana, orden" decoration-success="estado == 'subido'">
+                            <field name="pestana"/>
+                            <field name="orden"/>
+                            <field name="name"/>
+                            <field name="obligatoria"/>
+                            <field name="requisitos_count"/>
+                            <field name="attachment_id" optional="show"/>
+                            <field name="estado" widget="badge" readonly="1"
+                                   decoration-success="estado == 'subido'" decoration-info="estado in ('verificado', 'foliado')"/>
+                            <field name="subido_por" optional="hide"/>
+                            <button name="action_marcar_subido" type="object" string="Marcar subido" icon="fa-upload"
+                                    class="btn-link" invisible="estado == 'subido'"/>
+                        </list>
+                    </field>
+                    <separator string="Faltantes"/>
+                    <field name="stn_lexa_faltante_ids">
+                        <list editable="bottom" decoration-danger="desecha and estado in ('abierto', 'en_tramite')"
+                              decoration-muted="estado in ('resuelto', 'no_aplica')">
+                            <field name="name"/>
+                            <field name="requisito_id" optional="show" options="{'no_create': True}"/>
+                            <field name="dato" optional="show"/>
+                            <field name="donde_se_busco" optional="hide"/>
+                            <field name="consecuencia" optional="hide"/>
+                            <field name="desecha"/>
+                            <field name="solicitado_a_id" widget="many2one_avatar_user"/>
+                            <field name="fecha_limite"/>
+                            <field name="estado" widget="badge"
+                                   decoration-danger="estado == 'abierto'" decoration-warning="estado == 'en_tramite'"
+                                   decoration-success="estado == 'resuelto'"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

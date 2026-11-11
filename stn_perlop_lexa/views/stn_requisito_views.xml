@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_stn_requisito_form_lexa" model="ir.ui.view">
+        <field name="name">stn.requisito.form.lexa</field>
+        <field name="model">stn.requisito</field>
+        <field name="inherit_id" ref="stn_perlop_licitaciones.view_stn_requisito_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('oe_title')]" position="before">
+                <widget name="web_ribbon" title="Revisar (LEXA)" bg_color="text-bg-danger" invisible="not lexa_alerta"/>
+            </xpath>
+            <xpath expr="//page[@name='notas']" position="before">
+                <page string="Revisión de LEXA" name="lexa" invisible="not lexa_fecha_revision">
+                    <group>
+                        <group>
+                            <field name="lexa_rfc_leido"/>
+                            <field name="lexa_fecha_emision_leida"/>
+                            <field name="lexa_fecha_sello"/>
+                            <field name="lexa_folio"/>
+                        </group>
+                        <group>
+                            <field name="lexa_legibilidad"/>
+                            <field name="lexa_alerta"/>
+                            <field name="lexa_fecha_revision"/>
+                        </group>
+                    </group>
+                    <field name="lexa_contradiccion" invisible="not lexa_contradiccion"/>
+                    <field name="lexa_observacion"/>
+                </page>
+            </xpath>
+        </field>
+    </record>
+    <record id="view_stn_requisito_search_lexa" model="ir.ui.view">
+        <field name="name">stn.requisito.search.lexa</field>
+        <field name="model">stn.requisito</field>
+        <field name="inherit_id" ref="stn_perlop_licitaciones.view_stn_requisito_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='vencidos']" position="after">
+                <filter name="lexa_alerta" string="Con alerta de LEXA" domain="[('lexa_alerta', '=', True)]"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

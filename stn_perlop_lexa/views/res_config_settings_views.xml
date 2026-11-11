@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_stn_lexa" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.stn.lexa</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="stn_perlop_licitaciones.res_config_settings_view_form_stn_licitaciones"/>
+        <field name="arch" type="xml">
+            <xpath expr="//block[@name='stn_claude_block']" position="after">
+                <block title="LEXA · proposición legal y técnica" name="stn_lexa_block">
+                    <setting string="Integración con LEXA" help="LEXA arma la matriz de cotejo, la entrega para aprobación y revisa nuestros archivos requisito por requisito. Usa su propio token, distinto al de LICIA.">
+                        <field name="stn_lexa_activo"/>
+                        <div class="content-group mt8" invisible="not stn_lexa_activo">
+                            <div class="row"><label for="stn_lexa_url_base" class="col-lg-4 o_light_label"/><field name="stn_lexa_url_base" readonly="1"/></div>
+                            <div class="row" groups="base.group_system"><label for="stn_lexa_token" class="col-lg-4 o_light_label"/><field name="stn_lexa_token" password="True"/></div>
+                            <div class="mt8" groups="base.group_system">
+                                <button name="action_stn_lexa_generar_token" type="object" string="Generar nuevo token" icon="fa-key" class="btn-link"/>
+                            </div>
+                        </div>
+                    </setting>
+                    <setting string="Cómo recibe los encargos" help="Cola: los botones dejan el encargo pendiente y LEXA lo toma con /stn/lexa/pendientes. Tarea de Claude: Odoo dispara la tarea de LEXA con su activador API." invisible="not stn_lexa_activo">
+                        <div class="content-group">
+                            <field name="stn_lexa_modo" widget="radio"/>
+                            <div invisible="stn_lexa_modo != 'rutina_api'" class="mt8">
+                                <div class="row"><label for="stn_lexa_routine_url" class="col-lg-4 o_light_label"/><field name="stn_lexa_routine_url"/></div>
+                                <div class="row" groups="base.group_system"><label for="stn_lexa_routine_token" class="col-lg-4 o_light_label"/><field name="stn_lexa_routine_token" password="True"/></div>
+                                <div class="row"><label for="stn_lexa_beta" class="col-lg-4 o_light_label"/><field name="stn_lexa_beta" placeholder="experimental-cc-routine-2026-04-01"/></div>
+                            </div>
+                        </div>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,104 @@
+{
+ "esquema": "lexa.encargo/1.0",
+ "encargo_id": 12,
+ "llave": {
+  "numero_procedimiento": "LA-50-GYR-050GYR012-N-134-2026",
+  "empresa": "PERLOP",
+  "parte": "tecnica",
+  "version_matriz": 2
+ },
+ "tipo": "matriz",
+ "estado": "matriz_lista",
+ "resumen": "Matriz técnica v2: 24 renglones en 11 casillas; 1 bloquea (fumigación), 3 por confirmar.",
+ "fechas": {
+  "apertura": "2026-10-13 09:30",
+  "limite_interno": "2026-10-10 09:30"
+ },
+ "casillas": [
+  {
+   "pestana": "tecnico",
+   "orden": 1,
+   "nombre_exacto": "3.1.2 INCISO A)",
+   "obligatoria": true,
+   "estado": "pendiente"
+  },
+  {
+   "pestana": "tecnico",
+   "orden": 2,
+   "nombre_exacto": "3.1.2 INCISO B)",
+   "obligatoria": true,
+   "estado": "pendiente"
+  }
+ ],
+ "requisitos": [
+  {
+   "id": 845,
+   "orden_casilla": "1.1",
+   "numeral": "TÉRMINOS Y CONDICIONES › INCISO D) › NUMERAL 4)",
+   "documento_solicitado": "Estudios clínicos del personal que entrega (6 pruebas), laboratorio acreditado ante la EMA",
+   "texto_integro": "[cita literal completa]",
+   "anexo_o_formato": "formato libre / soporte",
+   "soportes_que_manda_acompanar": "acreditación EMA del laboratorio y su anexo técnico",
+   "causal_desechamiento_literal": "[advertencia literal]",
+   "tipo": "tecnico",
+   "clase_formato": "solo_portada",
+   "quien_lo_hace": "lexa_portada_empresa_anexa",
+   "vigencia_maxima": "3 meses",
+   "situacion": "VERIFICAR",
+   "semaforo": "confirmar",
+   "informacion_localizada": "Estudios usados en la N-120 (OneDrive › …)",
+   "informacion_pendiente": "Confirmar que sean del 13-jul-2026 o posteriores.",
+   "explicacion_en_corto": "TE PREGUNTO: ¿los estudios son del 13 de julio o posteriores?",
+   "huella": "ESTUDIOS CLINICOS",
+   "firma_requerida": "no_aplica",
+   "fundamento": "Art. 39 RLAASSP",
+   "cambiado_por_junta": {
+    "cambio": false
+   }
+  },
+  {
+   "orden_casilla": "1.4",
+   "numeral": "TÉRMINOS Y CONDICIONES › INCISO D) › NUMERAL 2)",
+   "documento_solicitado": "Contrato de fumigación con facturas y certificados de los 2 últimos meses",
+   "tipo": "tecnico",
+   "clase_formato": "solo_portada",
+   "quien_lo_hace": "lexa_portada_empresa_anexa",
+   "situacion": "CONSEGUIR",
+   "semaforo": "bloquea",
+   "huella": "CERTIFICADOS DE APLICACIÓN",
+   "causal_desechamiento_literal": "[advertencia literal]"
+  }
+ ],
+ "faltantes": [
+  {
+   "documento": "Certificados de fumigación ago-sep 2026",
+   "requisito": "1.4",
+   "dato_faltante": "certificados y facturas de agosto y septiembre",
+   "donde_se_busco": [
+    "OneDrive/<empresa>/fumigación/2026-08",
+    "OneDrive/<empresa>/fumigación/2026-09",
+    "vault de LEXA",
+    "Descargas"
+   ],
+   "lugar_en_documento": "detrás de la portada 1.4",
+   "consecuencia": "causal de desechamiento",
+   "desecha": true,
+   "solicitado_a": "Nombre del usuario en Odoo",
+   "estado": "abierto"
+  }
+ ],
+ "matriz": {
+  "nombre": "01_MATRIZ_DE_COTEJO_TECNICA.xlsx",
+  "contenido_base64": "<base64 del .xlsx>"
+ },
+ "comprasmx_ultima_revision": {
+  "fecha": "2026-10-08 08:30",
+  "anexos_nuevos": [],
+  "anexos_reemplazados": [],
+  "actas_junta_nuevas": [
+   "Acta de la junta del 06-oct"
+  ],
+  "avisos_cambio_fecha": [],
+  "casillas_cuadran_con_matriz": true
+ }
+}
