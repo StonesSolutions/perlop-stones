@@ -1184,7 +1184,10 @@ class CrmLead(models.Model):
         Req = self.env['stn.licitacion.requisito']
         Maestro = self.env['stn.requisito']
         seq = max(self.stn_requisito_ids.mapped('sequence') or [0])
+        recibidos = Req.browse()
         for f in filas:
+            if not isinstance(f, dict):
+                continue
             nombre = P.texto(f.get('requisito') or f.get('name'))
             if not nombre:
                 continue
@@ -1210,10 +1213,20 @@ class CrmLead(models.Model):
                 vals['categoria_id'] = self.env['stn.requisito.categoria']._stn_buscar_o_crear(f.get('categoria')).id
             if self.stn_tipo_servicio_id:
                 vals['tipo_servicio_id'] = self.stn_tipo_servicio_id.id
-            actual = self.stn_requisito_ids.filtered(
-                lambda r: (r.referencia or '') == (ref or '') and P.norm(r.name) == P.norm(nombre))[:1]
-            if not actual.requisito_id and not (actual and actual.requisito_id):
-                maestro = Maestro.search([('name', '=ilike', nombre)], limit=1)
+            libres = self.stn_requisito_ids - recibidos
+            actual = libres.filtered(
+                lambda r: P.norm(r.referencia or '') == P.norm(ref or '') and P.norm(r.name) == P.norm(nombre))[:1]
+            if not actual and ref:
+                # LICIA puede redactar distinto el mismo requisito: si la referencia es única, es el mismo
+                misma_ref = libres.filtered(lambda r: r.origen == 'licia' and P.norm(r.referencia or '') == P.norm(ref))
+                if len(misma_ref) == 1 and len([x for x in filas if isinstance(x, dict)
+                                                and P.norm(x.get('referencia') or '') == P.norm(ref)]) == 1:
+                    actual = misma_ref
+            if not actual.requisito_id:
+                # Documento maestro con el mismo nombre, solo de la empresa que licita (nunca de otra)
+                empresa = self.stn_empresa_licitante_id
+                maestro = Maestro.search([('name', '=ilike', nombre),
+                                          ('empresa_id', 'in', [empresa.id, False] if empresa else [False])], limit=1)
                 if maestro:
                     vals['requisito_id'] = maestro.id
             if actual:
@@ -1221,7 +1234,16 @@ class CrmLead(models.Model):
             else:
                 seq += 1
                 vals.update({'lead_id': self.id, 'sequence': seq})
-                Req.create(vals)
+                actual = Req.create(vals)
+            recibidos |= actual
+        # La ficha trae la lista completa: los requisitos de LICIA que ya no vienen se quitan,
+        # salvo los que el equipo (o LEXA) ya trabajó
+        for viejo in self.stn_requisito_ids.filtered(lambda r: r.origen == 'licia' and r not in recibidos):
+            if viejo._stn_tiene_trabajo():
+                advertencias.append(_('El requisito «%s» ya no viene en la ficha; se conservó porque el equipo ya '
+                                      'lo trabajó.', viejo.name))
+            else:
+                viejo.unlink()
 
     def _stn_sync_competidores(self, filas):
         if not filas or not isinstance(filas, list):

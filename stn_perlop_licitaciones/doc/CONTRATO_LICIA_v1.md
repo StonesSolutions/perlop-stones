@@ -103,7 +103,7 @@ Los textos de catálogo (estatus, criterio, tipo de procedimiento, tipo de servi
 
 Cada fila se identifica con una **llave natural**. Si la llave ya existe, la fila se actualiza; si no, se agrega. Lo que el equipo captura a mano no se borra.
 
-**v1.3 · `partidas[]` y `sedes[]` son la lista completa.** Si una ficha trae partidas, Odoo elimina las que ya no vienen, salvo las que tienen resultados capturados por el equipo (ganada, monto ofertado/adjudicado, nuestra suma de precios, dirección de entrega): esas se conservan con una advertencia. Igual con las sedes que mandó LICIA (las capturadas a mano se respetan). Si LICIA no tiene la lista completa, omite la clave. La llave de partida se compara sin el prefijo «Partida/Lote/Grupo» ni ceros a la izquierda («Partida 01» = «1»).
+**v1.3 · `partidas[]` y `sedes[]` son la lista completa (v1.6.1: también `requisitos[]`).** En requisitos, la misma `referencia` es el mismo requisito aunque cambie la redacción. Los requisitos de LICIA que ya no vienen se quitan, salvo los que el equipo o LEXA ya trabajaron (avance, archivos, casilla o revisión). Si una ficha trae partidas, Odoo elimina las que ya no vienen, salvo las que tienen resultados capturados por el equipo (ganada, monto ofertado/adjudicado, nuestra suma de precios, dirección de entrega): esas se conservan con una advertencia. Igual con las sedes que mandó LICIA (las capturadas a mano se respetan). Si LICIA no tiene la lista completa, omite la clave. La llave de partida se compara sin el prefijo «Partida/Lote/Grupo» ni ceros a la izquierda («Partida 01» = «1»).
 
 | Lista JSON | Tabla Odoo | Llave | Claves de cada fila |
 |---|---|---|---|

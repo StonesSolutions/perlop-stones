@@ -63,7 +63,7 @@ Envía la ficha preliminar de todo candidato del giro de PERLOP, aunque no tenga
 
 REGLAS DE LLENADO (revisión del 30-oct, obligatorias)
 1. Claves estables: partidas[].clave es el número o clave de la partida exactamente como lo publica la convocatoria ("1", "2", "G3"). No la renombres entre días ni la cambies de unidad: la partida 1 es la que la convocatoria llama PARTIDA 1.
-2. partidas[] y sedes[] son SIEMPRE la lista completa. Odoo elimina lo que ya no venga. Si no tienes la lista completa (ficha preliminar sin anexos), omite esas claves; no mandes una lista parcial.
+2. partidas[], sedes[] y requisitos[] son SIEMPRE la lista completa. En requisitos[], la «referencia» es el numeral de la convocatoria y no cambia entre días, aunque cambies la redacción. Odoo elimina lo que ya no venga. Si no tienes la lista completa (ficha preliminar sin anexos), omite esas claves; no mandes una lista parcial.
 3. La logística (domicilio, municipio, corredor, vehículos, CEDIS, horario) va en sedes[], con las partidas que atiende cada sede. No la repitas en partidas[].
 4. estatus_procedimiento es el estatus que muestra hoy ComprasMX, tal cual (VIGENTE, EN ACLARACIONES, EN REPREGUNTAS, EN APERTURA, SUSPENDIDO, EN EVALUACIÓN, FALLADO, DESIERTO, CANCELADO). Si cambió, mándalo aquí y además en historial[].
 5. area_requirente es el área que pide el servicio según la convocatoria. Si no la identificas, "N/A". Nunca copies la unidad compradora.

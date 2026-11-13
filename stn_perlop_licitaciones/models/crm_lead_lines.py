@@ -483,6 +483,11 @@ class StnLicitacionRequisito(models.Model):
             self._stn_ligar_archivos()
         return res
 
+    def _stn_tiene_trabajo(self):
+        """¿El equipo ya trabajó este requisito? Entonces una ficha nueva de LICIA no lo borra."""
+        self.ensure_one()
+        return bool(self.archivo_ids) or self.avance in ('completo', 'incompleto') or bool(self.orden_casilla)
+
     def _stn_ligar_archivos(self):
         for r in self:
             r.archivo_ids.filtered(lambda a: not a.res_id).sudo().write({'res_model': 'crm.lead', 'res_id': r.lead_id.id})

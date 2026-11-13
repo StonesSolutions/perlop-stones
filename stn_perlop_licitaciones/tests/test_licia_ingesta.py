@@ -25,7 +25,7 @@ class TestLiciaIngesta(TransactionCase):
             [('stn_no_procedimiento', 'in', [ficha()['numero_procedimiento'], 'LA-50-GYR-050GYR041-N-135-2026',
                                              'LA-50-GYR-050GYR017-N-3-2027', 'IA-11-B00-011B00001-N-4968-2026',
                                              'IM-2026-000379', 'LA-50-GYR-050GYR026-N-12-2027',
-                                             'LA-50-GYR-050GYR012-N-134-2026'])]).unlink()
+                                             'LA-50-GYR-050GYR012-N-134-2026', 'LA-50-GYR-050GYR069-N-3-2027'])]).unlink()
 
     def test_01_crea_y_llena_campos(self):
         res = self.Lead.stn_upsert_ficha(ficha())
@@ -355,6 +355,34 @@ class TestLiciaIngesta(TransactionCase):
         self.assertEqual(self.env['stn.requisito'].search_count([('empresa_id', '=', empresa.id)]), 22)
         wiz.action_quitar()
         self.assertFalse(self.env['stn.requisito'].search_count([('empresa_id', '=', empresa.id)]))
+
+    def test_14_requisitos_se_reemplazan(self):
+        base = {'numero_procedimiento': 'LA-50-GYR-050GYR069-N-3-2027', 'nombre_oportunidad': 'Campeche'}
+        dia1 = dict(base, requisitos=[
+            {'referencia': '4.1.1', 'requisito': 'Acreditamiento de personalidad', 'tipo': 'Legal'},
+            {'referencia': '4.1.4', 'requisito': 'Declaración de integridad', 'tipo': 'Legal'},
+            {'referencia': '4.1.13', 'requisito': 'Opinión SAT', 'tipo': 'Legal'},
+            {'referencia': '', 'requisito': 'Escrito sin referencia', 'tipo': 'Forma'},
+        ])
+        lead = self.Lead.browse(self.Lead.stn_upsert_ficha(dia1)['lead_id'])
+        self.assertEqual(len(lead.stn_requisito_ids), 4)
+        opinion = lead.stn_requisito_ids.filtered(lambda r: r.referencia == '4.1.13')
+        opinion.avance = 'completo'  # el equipo ya lo trabajó
+        dia2 = dict(base, requisitos=[
+            {'referencia': '4.1.1', 'requisito': 'Acreditamiento de la personalidad jurídica', 'tipo': 'Legal'},
+            {'referencia': '', 'requisito': 'Escrito sin referencia', 'tipo': 'Forma'},
+            {'referencia': '4.1.5', 'requisito': 'Manifiesto de vínculos', 'tipo': 'Legal'},
+        ])
+        res = self.Lead.stn_upsert_ficha(dia2)
+        refs = sorted(lead.stn_requisito_ids.mapped(lambda r: r.referencia or ''))
+        self.assertEqual(refs, ['', '4.1.1', '4.1.13', '4.1.5'],
+                         'Misma referencia = mismo requisito; el que ya no viene se va, salvo el trabajado')
+        self.assertEqual(lead.stn_requisito_ids.filtered(lambda r: r.referencia == '4.1.1').name,
+                         'Acreditamiento de la personalidad jurídica')
+        self.assertTrue(opinion.exists())
+        self.assertTrue(res['advertencias'])
+        self.Lead.stn_upsert_ficha(dia2)
+        self.assertEqual(len(lead.stn_requisito_ids), 4, 'Reenviar la misma ficha no duplica')
 
     def test_04e_reporte_diario(self):
         import json as _json, os as _os
