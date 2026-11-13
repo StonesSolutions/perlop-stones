@@ -1,6 +1,6 @@
 {
     'name': 'PERLOP · LEXA (proposición legal y técnica)',
-    'version': '19.0.1.1.1',
+    'version': '19.0.1.1.2',
     'summary': 'Integra a LEXA con el CRM de Licitaciones: matriz de cotejo por casilla de ComprasMX, '
                'aprobación humana, faltantes y revisión «cumple / no cumple» de nuestros archivos.',
     'description': """

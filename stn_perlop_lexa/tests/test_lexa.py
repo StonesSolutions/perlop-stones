@@ -169,6 +169,28 @@ class TestLexa(TransactionCase):
         self.assertTrue(any('fechas distintas' in a for a in res['advertencias']))
 
 
+    def test_05_renglones_con_mismo_numeral_y_reenvio(self):
+        payload = copy.deepcopy(MATRIZ)
+        payload['requisitos'] = [
+            {'orden_casilla': '9.1', 'numeral': '4.1.13 a 4.1.15', 'documento_solicitado': 'Opinión SAT', 'tipo': 'legal'},
+            {'orden_casilla': '9.2', 'numeral': '4.1.13 a 4.1.15', 'documento_solicitado': 'Opinión IMSS', 'tipo': 'legal'},
+            {'orden_casilla': '9.3', 'numeral': '4.1.13 a 4.1.15', 'documento_solicitado': 'Opinión INFONAVIT', 'tipo': 'legal'},
+        ]
+        payload['llave']['parte'] = 'legal'
+        payload['casillas'] = [{'pestana': 'legal', 'orden': 9, 'nombre_exacto': 'OPINIONES'}]
+        self.Service.stn_upsert_encargo(copy.deepcopy(payload))
+        legales = self.lead._stn_requisitos_por_pestana('legal').filtered(lambda r: r.origen == 'lexa')
+        self.assertEqual(len(legales), 3, 'Tres renglones con el mismo numeral no se fusionan')
+        # reenvío: el requisito del faltante cambia, el faltante no se duplica
+        payload['faltantes'] = [{'documento': 'Opiniones de cumplimiento', 'requisito': '9.1',
+                                 'donde_se_busco': ['Odoo'], 'desecha': False}]
+        self.Service.stn_upsert_encargo(copy.deepcopy(payload))
+        payload['faltantes'][0]['requisito'] = '9.2'
+        self.Service.stn_upsert_encargo(copy.deepcopy(payload))
+        self.assertEqual(len(self.lead._stn_requisitos_por_pestana('legal').filtered(lambda r: r.origen == 'lexa')), 3)
+        self.assertEqual(len(self.lead.stn_lexa_faltante_ids.filtered(
+            lambda f: f.name == 'Opiniones de cumplimiento')), 1)
+
     def test_04_soportes_desde_odoo(self):
         self.perlop.vat = 'POA0101019Z1'
         jade = self.env['res.partner'].create({'name': 'JADE prueba LEXA', 'is_company': True})

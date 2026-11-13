@@ -368,8 +368,15 @@ class StnLexaService(models.AbstractModel):
         return recibidas
 
     # ---------------- requisitos (renglones de la matriz) ----------------
-    def _buscar_requisito(self, lead, f, pestana):
-        reqs = lead.stn_requisito_ids
+    def _buscar_requisito(self, lead, f, pestana, excluir=None, filas=None):
+        """Busca el requisito en Odoo. `excluir`: los ya tomados en este envío. `filas`: el envío completo;
+        si varios renglones comparten numeral o nombre, ese criterio no sirve para distinguirlos."""
+        reqs = lead.stn_requisito_ids - (excluir or lead.stn_requisito_ids.browse())
+
+        def unico(clave, valor):
+            if not filas:
+                return True
+            return sum(1 for x in filas if isinstance(x, dict) and P.norm(x.get(clave) or '') == P.norm(valor)) <= 1
         rid = P.entero(f.get('id') or f.get('requisito_id'))
         if rid:
             r = reqs.filtered(lambda x: x.id == rid)
@@ -381,12 +388,12 @@ class StnLexaService(models.AbstractModel):
             if len(r) == 1:
                 return r
         numeral = P.texto(f.get('numeral') or f.get('referencia'))
-        if numeral:
-            r = reqs.filtered(lambda x: P.norm(x.referencia) == P.norm(numeral))
+        if numeral and unico('numeral', numeral):
+            r = reqs.filtered(lambda x: P.norm(x.referencia or '') == P.norm(numeral))
             if len(r) == 1:
                 return r
         nombre = P.texto(f.get('documento_solicitado') or f.get('requisito'))
-        if nombre:
+        if nombre and unico('documento_solicitado', nombre):
             r = reqs.filtered(lambda x: P.norm(x.name) == P.norm(nombre))
             if len(r) == 1:
                 return r
@@ -451,7 +458,8 @@ class StnLexaService(models.AbstractModel):
             if not isinstance(f, dict):
                 continue
             nombre = P.texto(f.get('documento_solicitado') or f.get('requisito'))
-            req = self._buscar_requisito(lead, f, P.mapear(f.get('pestana'), PESTANA_MAP) or pestana_parte)
+            req = self._buscar_requisito(lead, f, P.mapear(f.get('pestana'), PESTANA_MAP) or pestana_parte,
+                                         excluir=recibidos, filas=filas)
             vals = self._vals_requisito(lead, f, pestana_parte, casillas_lead)
             if req:
                 if nombre:
@@ -540,8 +548,13 @@ class StnLexaService(models.AbstractModel):
             if not P.texto(donde):
                 advertencias.append(_('Faltante «%s» sin «donde_se_busco»: no se puede declarar «falta» sin decir '
                                       'dónde se buscó.', nombre))
-            actual = lead.stn_lexa_faltante_ids.filtered(
+            libres = lead.stn_lexa_faltante_ids - recibidos
+            actual = libres.filtered(
                 lambda x: P.norm(x.name) == P.norm(nombre) and x.requisito_id.id == vals['requisito_id'])[:1]
+            if not actual:
+                # Mismo faltante aunque el requisito haya cambiado de id entre envíos
+                mismo = libres.filtered(lambda x: x.origen == 'lexa' and P.norm(x.name) == P.norm(nombre))
+                actual = mismo if len(mismo) == 1 else actual
             if actual:
                 if actual.estado in ('resuelto', 'no_aplica') and vals.get('estado') in (None, 'abierto'):
                     vals.pop('estado', None)  # lo cerró una persona
