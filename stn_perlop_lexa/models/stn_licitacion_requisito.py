@@ -65,3 +65,7 @@ class StnLicitacionRequisito(models.Model):
             self.pestana = self.casilla_id.pestana
             self.orden_casilla = '%s.%s' % (self.casilla_id.orden, self.subindice) if self.subindice \
                 else str(self.casilla_id.orden)
+
+    def _stn_tiene_trabajo(self):
+        return super()._stn_tiene_trabajo() or bool(self.casilla_id) or bool(self.lexa_encargo_id) \
+            or self.lexa_dictamen != 'sin_revisar'
